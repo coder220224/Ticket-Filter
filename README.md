@@ -17,7 +17,7 @@
 1. 前往 [Releases](https://github.com/poning0224/tixcraft-filter/releases) 頁面
 2. 下載最新版本的 ZIP 檔案
 3. 解壓縮檔案
-4. 開啟 Chrome 瀏覽器，前往 'chrome://extensions/'
+4. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
 5. 開啟右上角的「開發人員模式」
 6. 點擊「載入未封裝項目」
 7. 選擇解壓縮後的資料夾
