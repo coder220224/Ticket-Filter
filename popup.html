@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>拓元售票篩選器</title>
+  <style>
+    body {
+      width: 320px;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+      margin: 0;
+      background: #fff;
+      contain: content;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      contain: content;
+    }
+    .header {
+      background: #2684FF;
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: 500;
+      will-change: transform;
+    }
+    .content {
+      padding: 16px;
+      contain: content;
+    }
+    .filter-section {
+      margin-bottom: 16px;
+      contain: content;
+    }
+    .filter-section:last-child {
+      margin-bottom: 0;
+    }
+    .filter-title {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .keywords-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      min-height: 24px;
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 4px;
+      contain: content;
+    }
+    .keyword-tag {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #90caf9;
+      will-change: transform;
+    }
+    .keyword-tag .remove {
+      cursor: pointer;
+      color: #1976d2;
+      font-weight: bold;
+      transform: translateZ(0);
+    }
+    .keyword-tag .remove:hover {
+      color: #d32f2f;
+    }
+    .input-group {
+      display: flex;
+      gap: 8px;
+      contain: content;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #2684FF;
+      box-shadow: 0 0 0 2px rgba(38,132,255,0.25);
+    }
+    .add-btn {
+      background: #2684FF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0 12px;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      will-change: transform;
+    }
+    .add-btn:hover {
+      background: #1a73e8;
+    }
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+    }
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      cursor: pointer;
+    }
+    label {
+      font-size: 14px;
+      color: #333;
+      user-select: none;
+      cursor: pointer;
+    }
+    .show-all-btn {
+      width: 100%;
+      padding: 8px 16px;
+      border: 1px solid #2684FF;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      background: #f8f9fa;
+      color: #2684FF;
+      transition: background-color 0.2s;
+      will-change: transform;
+    }
+    .show-all-btn:hover {
+      background: #e3f2fd;
+    }
+    small {
+      color: #666;
+      font-size: 12px;
+      display: block;
+      margin-top: 4px;
+    }
+    .current-filter {
+      display: inline-block;
+      background: #2684FF;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      will-change: transform;
+    }
+    .no-keywords {
+      color: #666;
+      font-size: 13px;
+      font-style: italic;
+    }
+    .social-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+      contain: content;
+    }
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      color: #2684FF;
+      text-decoration: none;
+      font-size: 13px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+      will-change: transform;
+    }
+    .social-link:hover {
+      background-color: #f0f7ff;
+    }
+    .social-icon {
+      width: 16px;
+      height: 16px;
+      will-change: transform;
+    }
+    .version-text {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      拓元售票篩選器
+    </div>
+    <div class="content">
+      <div class="filter-section">
+        <div class="filter-title">關鍵字篩選</div>
+        <div class="input-group">
+          <input type="text" id="areaFilter" placeholder="輸入想要的區域名稱">
+          <button class="add-btn" id="addKeyword">+</button>
+        </div>
+        <small>例如：VIP場邊席（按Enter或點擊+新增）</small>
+        <div id="currentFilter" class="current-filter" style="display: none;">
+          關鍵字篩選：<span id="filterText"></span>
+        </div>
+        <div id="keywordsContainer" class="keywords-container">
+          <span class="no-keywords">尚未設定篩選條件</span>
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="showSoldOut">
+          <label for="showSoldOut">顯示已售完的票券</label>
+        </div>
+      </div>
+      <div class="filter-section">
+        <button id="showAll" class="show-all-btn">顯示全部票券</button>
+      </div>
+      <div class="social-section">
+        <a href="您的Thread文章連結" target="_blank" class="social-link">
+          <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+          </svg>
+          查看使用教學與更新資訊
+        </a>
+        <div class="version-text">版本 1.0.0 | 開發者：摳得柴柴</div>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 

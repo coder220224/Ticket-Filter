@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "拓元售票篩選器",
+  "version": "1.0.0",
+  "description": "在拓元售票網站上快速篩選您想要的區域票券",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.tixcraft.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.tixcraft.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  }
+} 
