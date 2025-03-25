@@ -1,4 +1,5 @@
-# 拓元售票篩選器
+# <img src="https://raw.githubusercontent.com/coder220224/tixcraft-filter/refs/heads/main/images/icon128.png" alt="圖片描述" width="25"/>  拓元售票篩選器
+
 
 一個 Chrome 擴充功能，用於在拓元售票網站上快速篩選您想要的區域票券。
 
