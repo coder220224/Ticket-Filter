@@ -53,10 +53,22 @@
 或著私訊我的社群帳號[摳得柴柴](https://www.threads.net/@coder22022)。
 
 ## 贊助支持
-[![歐富寶支付](https://payment.opay.tw/Content/themes/WebStyle201404/images/allpay.png)](https://p.opay.tw/Ha7w9)   
-<a href="https://mkt.jkopay.com/desktop?url=https%3A%2F%2Fservice.jkopay.com%2Fr%2Ftransfer%3Fj%3DTransfer%253A902576414">
-  <img src="https://i.ibb.co/nNTmRYsQ/logo-modified.png" alt="街口支付" width="110" height="auto" />
-</a>
+  <!-- 歐富寶支付 -->
+  <a href="https://p.opay.tw/Ha7w9">
+    <img src="https://payment.opay.tw/Content/themes/WebStyle201404/images/allpay.png" alt="歐富寶支付" width="200" height="auto" style="margin-right: 20px;" />
+  </a>
+
+  <!-- 街口支付 -->
+  <a href="https://mkt.jkopay.com/desktop?url=https%3A%2F%2Fservice.jkopay.com%2Fr%2Ftransfer%3Fj%3DTransfer%253A902576414">
+    <img src="https://i.ibb.co/nNTmRYsQ/logo-modified.png" alt="街口支付" width="110" height="auto" style="margin-right: 20px;" />
+  </a>
+
+  <!-- PayPal -->
+  <a href="https://www.paypal.com/ncp/payment/2WNV2F4R55J7A">
+    <img src="https://i.ibb.co/JRSMqgVC/Paypal-chreckout-logo.png" alt="PayPal" width="150" height="auto" />
+  </a>
+
+
 
 
 
