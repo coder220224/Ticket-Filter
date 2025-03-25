@@ -52,17 +52,13 @@
 
 或著私訊我的社群帳號[摳得柴柴](https://www.threads.net/@coder22022)。
 
+
+
 ## 贊助支持
+如果你喜歡這個項目並希望支持它，可以考慮通過以下方式贊助：
+
 <a href="https://p.opay.tw/Ha7w9"><img src="https://payment.opay.tw/Content/themes/WebStyle201404/images/allpay.png" alt="歐富寶支付" width="203"></a> <a href="https://mkt.jkopay.com/desktop?url=https%3A%2F%2Fservice.jkopay.com%2Fr%2Ftransfer%3Fj%3DTransfer%253A902576414"><img src="https://i.ibb.co/nNTmRYsQ/logo-modified.png" alt="街口支付" width="110"></a> <a href="https://www.paypal.com/ncp/payment/2WNV2F4R55J7A"><img src="https://i.ibb.co/JRSMqgVC/Paypal-chreckout-logo.png" alt="PayPal" width="155"></a>
 
+每一分支持都對我很有幫助，謝謝！
 
 
-
-
-
-
-
-
-## 授權條款
-
-本專案採用 MIT 授權條款。詳見 [LICENSE](LICENSE) 檔案。 
