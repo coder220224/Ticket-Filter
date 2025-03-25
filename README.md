@@ -12,8 +12,6 @@
 
 ## 安裝方式
 
-### 從 GitHub 下載
-
 1. 前往 [Releases](https://github.com/poning0224/tixcraft-filter/releases) 頁面
 2. 下載最新版本的 ZIP 檔案
 3. 解壓縮檔案
@@ -45,11 +43,13 @@
 ## 版本資訊
 
 - 目前版本：1.0.0
-- 最後更新：2024/03/24
+- 最後更新：2024/03/25
 
 ## 開發者資訊
 
 如有任何問題或建議，歡迎透過 [GitHub Issues](https://github.com/poning0224/tixcraft-filter/issues) 回報。
+
+或著私訊我的社群帳號[摳得柴柴](https://www.threads.net/@coder22022)。
 
 ## 授權條款
 
