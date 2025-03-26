@@ -12,7 +12,7 @@
 - 即時更新：當網頁更新時自動套用篩選條件
 
 ## 安裝方式
-
+### Github Releases
 1. 前往 [Releases](https://github.com/poning0224/tixcraft-filter/releases) 頁面
 2. 下載最新版本的 ZIP 檔案
 3. 解壓縮檔案
@@ -21,6 +21,14 @@
 6. 點擊「載入未封裝項目」
 7. 選擇解壓縮後的資料夾
 
+### Google雲端
+1. 前往 [google雲端](https://drive.google.com/drive/folders/1V577Xu0xNW4Ao3AfxP4zKQusMgz7xU0I?usp=sharing)
+2. 下載tixcraft_filter資料夾
+3. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
+4. 開啟右上角的「開發人員模式」
+5. 點擊「載入未封裝項目」
+6. 選擇資料夾
+   
 ## 使用方式
 
 1. 點擊擴充功能圖示開啟篩選器
