@@ -22,7 +22,7 @@
 7. 選擇解壓縮後的資料夾
 
 ### Google雲端
-1. 前往 [google雲端](https://drive.google.com/drive/folders/1V577Xu0xNW4Ao3AfxP4zKQusMgz7xU0I?usp=sharing)
+1. 前往 [google雲端](http://bit.ly/41IqDzF)
 2. 下載tixcraft_filter資料夾
 3. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
 4. 開啟右上角的「開發人員模式」
