@@ -12,6 +12,11 @@
 - 即時更新：當網頁更新時自動套用篩選條件
 
 ## 安裝方式
+### 🔥Chrome商店
+1. 前往 [Chrome商店](https://chromewebstore.google.com/detail/pofndajlpfdonhkefkppngfghocppcck?utm_source=item-share-cb)
+2. 加到Chrome
+3. 新增擴充功能
+
 ### Github Releases
 1. 前往 [Releases](https://github.com/poning0224/tixcraft-filter/releases) 頁面
 2. 下載最新版本的 ZIP 檔案
