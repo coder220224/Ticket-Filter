@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "拓元售票篩選器",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "在拓元售票網站上快速篩選您想要的區域票券",
   "permissions": [
     "storage",
