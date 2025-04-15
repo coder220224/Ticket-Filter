@@ -7,6 +7,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentFilter = document.getElementById('currentFilter');
   const filterText = document.getElementById('filterText');
 
+  // 添加搜尋說明
+  const helpText = document.createElement('div');
+  helpText.className = 'help-text';
+  helpText.innerHTML = `
+    <p style="font-size: 12px; color: #666; margin: 4px 0;">
+      搜尋格式：3200,A區 (同時符合) 或 4500+3200 (任一符合)
+    </p>
+  `;
+  
+  // 將說明插入到輸入框上方
+  const exampleText = areaFilter.previousElementSibling;
+  if (exampleText) {
+    exampleText.parentNode.insertBefore(helpText, exampleText.nextSibling);
+  }
+
   let keywords = new Set();
 
   // Load saved settings from storage
