@@ -33,6 +33,14 @@
 5. 開啟右上角的「開發人員模式」
 6. 點擊「載入未封裝項目」
 7. 選擇解壓縮後的資料夾
+
+### 📥 本地下載(版本1.1.0)
+1. [點我下載](https://github.com/coder220224/tixcraft-filter/releases/download/v1.1.0/tixcraft-filter-v1.1.0.zip)
+2. 解壓縮檔案
+3. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
+4. 開啟右上角的「開發人員模式」
+5. 點擊「載入未封裝項目」
+6. 選擇解壓縮後的資料夾
    
 ## 使用方式
 
