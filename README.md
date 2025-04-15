@@ -12,20 +12,20 @@
 - 即時更新：當網頁更新時自動套用篩選條件
 
 ## 安裝方式
-### <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Google_Chrome_Web_Store_icon_2022.svg/884px-Google_Chrome_Web_Store_icon_2022.svg.png" width="25"> Chrome商店
+### <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Google_Chrome_Web_Store_icon_2022.svg/884px-Google_Chrome_Web_Store_icon_2022.svg.png" width="25"> Chrome商店(版本1.0.0)
 1. 前往 [Chrome商店](https://chromewebstore.google.com/detail/pofndajlpfdonhkefkppngfghocppcck?utm_source=item-share-cb)
 2. 加到Chrome
 3. 新增擴充功能
 
-### <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3RaendkWxwbnlsA8UyDPmcDbqIMQETxKYpw&s" width="20"> Google雲端
-1. 前往 [Google雲端](http://bit.ly/41IqDzF)
+### <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3RaendkWxwbnlsA8UyDPmcDbqIMQETxKYpw&s" width="20"> Google雲端(版本1.1.0)
+1. 前往 [Google雲端](https://drive.google.com/drive/folders/1P_2cJasK28-B_I0j0I_CGG5UZuDX1t7l?usp=sharing)
 2. 下載tixcraft_filter資料夾
 3. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
 4. 開啟右上角的「開發人員模式」
 5. 點擊「載入未封裝項目」
 6. 選擇資料夾
 
-### <img src="https://raw.githubusercontent.com/primer/octicons/main/icons/tag-16.svg" width="20" /> Github Releases
+### <img src="https://raw.githubusercontent.com/primer/octicons/main/icons/tag-16.svg" width="20" /> Github Releases(版本1.1.0)
 1. 前往 [Releases](https://github.com/poning0224/tixcraft-filter/releases) 頁面
 2. 下載最新版本的 ZIP 檔案
 3. 解壓縮檔案
