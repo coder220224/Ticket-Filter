@@ -43,7 +43,7 @@
 7. 選擇解壓縮後的資料夾
 
 ## 📱 手機安裝方式
-- [點此看YT教學](https://youtube.com/shorts/KQwCQwVKBBY?feature=share)
+- ios : [點此看YT教學](https://youtube.com/shorts/KQwCQwVKBBY?feature=share)
 
 ## 🔧 使用方式
 
