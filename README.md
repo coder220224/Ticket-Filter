@@ -9,7 +9,7 @@
 - 拓元售票網站 (tixcraft.com)
 - KKTIX售票網站 (kktix.com)
 - ibon售票網站 (ibon.com.tw)
-- 快達票售票網站 (cityline.com)
+- cityline售票網站 (cityline.com)
 
 ### 篩選功能
 - 關鍵字篩選：輸入想要的區域名稱（如：VIP、特A區等），快速找出符合條件的票券
@@ -82,7 +82,7 @@
 
 ## 🔥 版本更新 (v1.2.0)
 ### 1. 新增多平台支援
-   - 支援 KKTIX、ibon、快達票售票網站
+   - 支援 KKTIX、ibon、cityline售票網站
 ### 2. 新增進階設定面板
    - 可控制時間顯示
    - 可控制篩選狀態顯示
