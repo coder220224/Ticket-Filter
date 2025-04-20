@@ -38,15 +38,15 @@
 6. 選擇解壓縮後的資料夾
 
 ### <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3RaendkWxwbnlsA8UyDPmcDbqIMQETxKYpw&s" width="20"> Google雲端(版本1.2.0)
-1. 前往 [Google雲端](https://drive.google.com/drive/folders/1P_2cJasK28-B_I0j0I_CGG5UZuDX1t7l?usp=sharing)
-2. 下載tixcraft_filter資料夾
+1. 前往 [Google雲端](https://drive.google.com/drive/folders/1Dy8WWYLlIU--oAYryyK7OyV2Dn-Fm7YK?usp=sharing)
+2. 下載ticket_filter資料夾
 3. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
 4. 開啟右上角的「開發人員模式」
 5. 點擊「載入未封裝項目」
 6. 選擇資料夾
 
 ### <img src="https://raw.githubusercontent.com/primer/octicons/main/icons/tag-16.svg" width="20" /> Github Releases(版本1.2.0)
-1. 前往 [Releases](https://github.com/poning0224/tixcraft-filter/releases) 頁面
+1. 前往 [Releases](https://github.com/coder220224/ticket-filter/releases) 頁面
 2. 下載最新版本的 ZIP 檔案
 3. 解壓縮檔案
 4. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
