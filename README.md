@@ -39,7 +39,7 @@
 5. 點擊「載入未封裝項目」
 6. 選擇解壓縮後的資料夾
 
-### <img src="https://raw.githubusercontent.com/primer/octicons/main/icons/tag-16.svg" width="20" /> Github Releases(版本1.2.0)
+### <img src="https://raw.githubusercontent.com/primer/octicons/main/icons/tag-16.svg" width="20" /> Github Releases(版本1.3.0)
 1. 前往 [Releases](https://github.com/coder220224/ticket-filter/releases) 頁面
 2. 下載最新版本的 ZIP 檔案
 3. 解壓縮檔案
