@@ -261,32 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (keywords.size === 0) {
       keywordsContainer.innerHTML = '<span class="no-keywords">尚未設定篩選條件</span>';
       
-      // 如果是ibon網站，直接重置所有行
-      if (currentSite === 'ibon') {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-          if (tabs[0]) {
-            chrome.scripting.executeScript({
-              target: { tabId: tabs[0].id },
-              func: () => {
-                function resetAllRows(root) {
-                  if (root.shadowRoot) {
-                    const rows = root.shadowRoot.querySelectorAll('tr[id^="B"]');
-                    rows.forEach(row => {
-                      row.style.removeProperty('display');
-                      Array.from(row.children).forEach(cell => {
-                        cell.style.removeProperty('display');
-                      });
-                    });
-                  }
-                  Array.from(root.children).forEach(child => resetAllRows(child));
-                }
-                resetAllRows(document.documentElement);
-              }
-            });
-          }
-        });
-      }
-      
       // 添加這行來隱藏標籤
       if (currentFilter) {
         currentFilter.style.display = 'none';

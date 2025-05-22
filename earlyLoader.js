@@ -10,6 +10,37 @@
   // 仅在适用的网站上应用筛选
   if (!isIbon && !isTixcraft && !isKktix && !isCityline && !isEra) return;
 
+  // 特別處理 ibon 網站
+  if (isIbon) {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'ticket-filter-early-style-ibon';
+    styleElement.textContent = `
+      /* ibon 網站 - 使用不透明度和顯示過渡效果 */
+      body {
+        opacity: 0.01 !important;
+        transition: opacity 0.3s ease-out;
+      }
+      body.filter-ready {
+        opacity: 1 !important;
+      }
+    `;
+    document.documentElement.appendChild(styleElement);
+
+    // 監聽過濾完成的消息
+    window.addEventListener('message', function(event) {
+      if (event.data.type === 'FILTER_APPLIED') {
+        document.body.classList.add('filter-ready');
+      }
+    });
+
+    // 安全機制：確保不會永久隱藏
+    setTimeout(() => {
+      document.body.classList.add('filter-ready');
+    }, 800);
+
+    return; // 對 ibon 網站使用專門的處理，不執行後續代碼
+  }
+
   // 为不同网站使用不同的隐藏方式
   if (isTixcraft) {
     // 拓元网站 - 使用visibility隐藏

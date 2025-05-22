@@ -788,96 +788,12 @@ async function filterTixcraftTickets() {
 
 // ibon票券篩選
 async function filterIbonTickets() {
-  let observer = null;
-  let lastUrl = location.href;
-
-  // 強制重新載入頁面的函數
-  function forceReload() {
-    const currentUrl = location.href;
-    if (currentUrl !== lastUrl) {
-      lastUrl = currentUrl;
-      // 強制清除所有已有的篩選狀態
-      function clearFilters(element) {
-        if (element.shadowRoot) {
-          const rows = element.shadowRoot.querySelectorAll('tr[id^="B"]');
-          rows.forEach(row => {
-            row.classList.remove('filter-processed');
-            row.classList.remove('hidden-by-extension');
-            row.style.removeProperty('display');
-          });
-        }
-        Array.from(element.children || []).forEach(clearFilters);
-      }
-      clearFilters(document.documentElement);
-      
-      // 強制重新執行篩選
-      setTimeout(() => {
-        processTicketAreas(document.documentElement);
-      }, 100);
-    }
-  }
-
-  // 監聽頁面變化
-  window.addEventListener('popstate', forceReload);
-  window.addEventListener('hashchange', forceReload);
-  
-  // 使用 MutationObserver 監聽 URL 變化
-  const urlObserver = new MutationObserver(() => {
-    forceReload();
-  });
-  
-  urlObserver.observe(document.documentElement, {
-    childList: true,
-    subtree: true
-  });
-
-  // 添加全局樣式來預設隱藏所有票券
-  const globalStyle = document.createElement('style');
-  globalStyle.textContent = `
-    tr[id^="B"] { 
-      visibility: hidden !important;
-      opacity: 0 !important;
-      transition: visibility 0s, opacity 0.1s linear !important;
-    }
-    tr[id^="B"].filter-processed {
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-  `;
-  document.head.appendChild(globalStyle);
-
   function processTicketAreas(element) {
     if (element.shadowRoot) {
-      // 在shadow root中添加樣式
-      let style = element.shadowRoot.querySelector('style.extension-filter-style');
-      if (!style) {
-        style = document.createElement('style');
-        style.className = 'extension-filter-style';
-        element.shadowRoot.appendChild(style);
-      }
-      style.textContent = `
-        tr[id^="B"] { 
-          visibility: hidden !important;
-          opacity: 0 !important;
-          transition: visibility 0s, opacity 0.1s linear !important;
-        }
-        tr[id^="B"].filter-processed {
-          visibility: visible !important;
-          opacity: 1 !important;
-        }
-        tr[id^="B"].hidden-by-extension { 
-          display: none !important; 
-        }
-        tr[id^="B"].hidden-by-extension * { 
-          display: none !important; 
-        }
-      `;
-      
-      // 處理當前shadow root中的票券
       const rows = element.shadowRoot.querySelectorAll('tr[id^="B"]');
-      
       if (rows.length > 0) {
         rows.forEach(row => {
+          // 只保留篩選邏輯，移除 shadowRoot 處理
           const areaCell = row.querySelector('td[data-title="票區"]');
           const priceCell = row.querySelector('td[data-title="票價(NT$)"]');
           
@@ -914,9 +830,6 @@ async function filterIbonTickets() {
             if (settings.keywords.length > 0 && !matchesKeyword) shouldShow = false;
             if (settings.hideSoldOut && isSoldOut) shouldShow = false;
 
-            // 標記為已處理
-            row.classList.add('filter-processed');
-
             // 應用顯示/隱藏狀態
             if (!shouldShow) {
               row.style.setProperty('display', 'none', 'important');
@@ -936,64 +849,10 @@ async function filterIbonTickets() {
       }
     }
     
-    // 遞迴處理所有子元素
-    const children = element.children;
-    if (children) {
-      Array.from(children).forEach(child => {
-        processTicketAreas(child);
-      });
-    }
+    Array.from(element.children || []).forEach(processTicketAreas);
   }
 
-  // 清理之前的觀察器
-  if (observer) {
-    observer.disconnect();
-  }
-
-  // 開始處理整個文檔
   processTicketAreas(document.documentElement);
-
-  // 設置新的觀察器
-  observer = new MutationObserver((mutations) => {
-    let shouldProcess = false;
-    for (const mutation of mutations) {
-      // 只在真正需要時處理變化
-      if (mutation.type === 'childList' || 
-          (mutation.type === 'attributes' && 
-           (mutation.attributeName === 'style' || 
-            mutation.attributeName === 'class' || 
-            mutation.attributeName === 'data-title'))) {
-        shouldProcess = true;
-        break;
-      }
-    }
-    if (shouldProcess) {
-      processTicketAreas(document.documentElement);
-    }
-  });
-
-  // 監視整個文檔的變化，但更有選擇性地處理
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['style', 'class', 'data-title']
-  });
-
-  // 監聽頁面可見性變化
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      processTicketAreas(document.documentElement);
-    }
-  });
-
-  // 定期檢查頁面內容（作為備用方案）
-  setInterval(() => {
-    const ticketRows = document.querySelector('tr[id^="B"]');
-    if (ticketRows) {
-      processTicketAreas(document.documentElement);
-    }
-  }, 1000);
 }
 
 // Cityline票券篩選
@@ -1403,6 +1262,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ success: true });
       }
     }
+
+    // 在 ibon 票券頁面時觸發重整
+    if (site === 'ibon' && location.href.includes('UTK0201_000.aspx')) {
+      console.log("ibon票券頁面，自動重整頁面");
+      setTimeout(() => location.reload(), 100); // 簡短延遲後重整
+    }
   } catch (error) {
     console.log('處理訊息時發生錯誤：', error);
     sendResponse({ success: false, error: error.message });
@@ -1439,8 +1304,8 @@ const observer = new MutationObserver((mutations) => {
     clearTimeout(statusDebounceTimer);
   }
 
-  // 所有網站統一使用50ms的延遲時間
-  const debounceTime = 50;
+  // 根據網站定義不同的延遲時間
+  const debounceTime = getDebounceTime();
 
   // 篩選功能的防抖
   filterDebounceTimer = setTimeout(() => {
@@ -1656,4 +1521,17 @@ document.addEventListener('DOMContentLoaded', () => {
       showFilterStatus();
     });
   }
-}); 
+});
+
+// 根據網站定義不同的延遲時間
+function getDebounceTime() {
+  const site = getCurrentSite();
+  switch(site) {
+    case 'ibon':
+      return 250; // ibon 網站需要較長的延遲
+    case 'ticketplus':
+      return 50;  // 遠大售票也需要稍長延遲
+    default:
+      return 50;   // 其他網站使用短延遲
+  }
+} 
