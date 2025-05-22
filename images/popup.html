@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>搶票柴柴-售票網站篩選器</title>
+  <style>
+    body {
+      width: 320px;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+      margin: 0;
+      background: #fff;
+      contain: content;
+    }
+ container {
+      display: flex;
+      flex-direction: column;
+      contain: content;
+    }
+    .header {
+      background: #2684FF;
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-title {
+      font-size: 16px;
+    }
+    .header span {
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      line-height: 1.5;
+      height: 25px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+    .content {
+      padding: 16px;
+      contain: content;
+      position: relative;
+    }
+    .filter-section {
+      margin-bottom: 8px;
+      contain: content;
+    }
+    .filter-section:last-child {
+      margin-bottom: 0;
+    }
+    .filter-title {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    .keywords-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      min-height: 24px;
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 4px;
+      contain: content;
+    }
+    .keyword-tag {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #90caf9;
+      will-change: transform;
+    }
+    .keyword-tag .remove {
+      cursor: pointer;
+      color: #1976d2;
+      font-weight: bold;
+      transform: translateZ(0);
+    }
+    .keyword-tag .remove:hover {
+      color: #d32f2f;
+    }
+    .input-group {
+      display: flex;
+      gap: 8px;
+      contain: content;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #2684FF;
+      box-shadow: 0 0 0 2px rgba(38,132,255,0.25);
+    }
+    input[type="text"]:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+      color: #999;
+    }
+    .add-btn {
+      background: #2684FF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0 12px;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      will-change: transform;
+    }
+    .add-btn:hover {
+      background: #1a73e8;
+    }
+    button:disabled {
+      background-color: #ccc !important;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+    }
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      cursor: pointer;
+    }
+    input[type="checkbox"]:disabled {
+      cursor: not-allowed;
+    }
+    input[type="checkbox"]:disabled + label {
+      color: #999;
+      cursor: not-allowed;
+    }
+    label {
+      font-size: 14px;
+      color: #333;
+      user-select: none;
+      cursor: pointer;
+    }
+    .show-all-btn {
+      width: 100%;
+      padding: 8px 16px;
+      border: 1px solid #2684FF;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      background: #f8f9fa;
+      color: #2684FF;
+      transition: background-color 0.2s;
+      will-change: transform;
+    }
+    .show-all-btn:hover {
+      background: #e3f2fd;
+    }
+    small {
+      color: #666;
+      font-size: 12px;
+      display: block;
+      margin-top: 4px;
+    }
+    .current-filter {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      will-change: transform;
+    }
+    .current-filter.keyword {
+      background: #4CAF50;
+      color: #fff;
+    }
+    .current-filter.blacklist {
+      background: #f44336;
+      color: #fff;
+    }
+    .no-keywords {
+      color: #666;
+      font-size: 13px;
+      font-style: italic;
+    }
+    .social-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #eee;
+      contain: content;
+    }
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      color: #2684FF;
+      text-decoration: none;
+      font-size: 13px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+      will-change: transform;
+    }
+    .social-link:hover {
+      background-color: #f0f7ff;
+    }
+    .social-icon {
+      width: 16px;
+      height: 16px;
+      will-change: transform;
+    }
+    .version-text {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      margin-top: 8px;
+    }
+    .time-toggle {
+      position: absolute;
+      top: 8px;
+      right: 46px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+      cursor: pointer;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 20px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    .time-toggle .switch input:checked + .slider {
+      background-color: #2684FF;
+    }
+    .header-switch .switch input:checked + .slider {
+      background-color: #4CAF50;
+    }
+    input:checked + .slider:before {
+      transform: translateX(15px);
+    }
+    .time-toggle-label {
+      font-size: 13px;
+      color: #666;
+      user-select: none;
+      cursor: pointer;
+    }
+    .settings-icon {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      color: #fff;
+      transition: color 0.3s;
+      z-index: 100;
+    }
+    .settings-icon:hover {
+      color: #e3f2fd;
+    }
+    .settings-panel {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: none;
+      min-width: 120px;
+      width: fit-content;
+    }
+    .settings-panel.show {
+      display: block;
+    }
+    .settings-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+    }
+    .settings-item label {
+      font-size: 13px;
+      color: #666;
+      user-select: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .main-switch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+    }
+    .main-switch .switch {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+    .main-switch span {
+      font-weight: bold;
+      color: #333;
+    }
+    .divider {
+      height: 1px;
+      background-color: #ddd;
+      margin: 15px 0;
+    }
+    .disabled-content {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-switch span {
+      font-size: 14px;
+      color: #fff;
+    }
+    .header-icon {
+      width: 25px;
+      height: 25px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    /* 自定義警告框樣式 */
+    .custom-alert {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      z-index: 2000;
+      width: 240px;
+      display: none;
+      font-size: 14px;
+    }
+    
+    .alert-content {
+      color: #333;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    
+    .alert-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    
+    .alert-button {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.2s;
+    }
+    
+    .alert-confirm {
+      background: #2684FF;
+      color: white;
+    }
+    
+    .alert-confirm:hover {
+      background: #1a73e8;
+    }
+    
+    .alert-cancel {
+      background: #f1f3f4;
+      color: #333;
+    }
+    
+    .alert-cancel:hover {
+      background: #e8eaed;
+    }
+
+    .alert-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1999;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 添加自定義警告框HTML -->
+    <div class="alert-overlay"></div>
+    <div class="custom-alert">
+      <div class="alert-content"></div>
+      <div class="alert-buttons">
+        <button class="alert-button alert-cancel">取消</button>
+        <button class="alert-button alert-confirm">確定</button>
+      </div>
+    </div>
+    <div class="header">
+      <span><img src="ticket.png" class="header-icon" alt="票券图标">搶票柴柴-售票網站篩選器</span>
+      <svg class="settings-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+      </svg>
+    </div>
+    <div class="content">
+      <div class="header-switch" style="margin-bottom: 16px;">
+        <span style="color: #333;">啟用</span>
+        <label class="switch">
+          <input type="checkbox" id="extensionEnabled" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="settings-panel">
+        <div class="settings-item">
+          <input type="checkbox" id="showServerTime" checked>
+          <label for="showServerTime">顯示本地時間</label>
+        </div>
+        <div class="settings-item">
+          <input type="checkbox" id="showFilterStatus" checked>
+          <label for="showFilterStatus">顯示篩選條件</label>
+        </div>
+        <div class="settings-item">
+          <input type="checkbox" id="showHelpText" checked>
+          <label for="showHelpText">顯示提示訊息</label>
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title">✅關鍵字篩選</div>
+        <div class="input-group">
+          <input type="text" id="areaFilter" placeholder="輸入想要的區域名稱">
+          <button class="add-btn" id="addKeyword">+</button>
+        </div>
+        <small class="help-text">例如：VIP、3200,A區、3200+4500（按Enter新增）</small>
+        <div style="color: #666; font-size: small;">
+        </div>
+        <div id="currentFilter" class="current-filter keyword" style="display: none;">
+          關鍵字篩選：<span id="filterText"></span>
+        </div>
+        <div id="keywordsContainer" class="keywords-container">
+          <span class="no-keywords">尚未設定篩選條件</span>
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title">⛔️黑名單過濾</div>
+        <div class="input-group">
+          <input type="text" id="blacklistFilter" placeholder="輸入不想要的區域名稱">
+          <button class="add-btn" id="addBlacklist">+</button>
+        </div>
+        <small class="help-text">例如：VIP、3200,A區、3200+4500（按Enter新增）</small>
+        <div id="currentBlacklist" class="current-filter blacklist" style="display: none;">
+          黑名單過濾：<span id="blacklistText"></span>
+        </div>
+        <div id="blacklistContainer" class="keywords-container">
+          <span class="no-keywords">尚未設定過濾條件</span>
+        </div>
+      </div>
+      <div class="filter-section" style="margin-bottom: 4px;">
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="showSoldOut">
+          <label for="showSoldOut">不顯示已售完票券</label>
+        </div>
+      </div>
+      <div class="filter-section">
+        <button id="showAll" class="show-all-btn">顯示全部票券</button>
+      </div>
+      <div class="social-section">
+        <a href="https://github.com/coder220224/tixcraft-filter" target="_blank" class="social-link">
+          <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+          </svg>
+          查看使用教學與更新資訊
+        </a>
+        <div class="version-text">版本 1.3.0 | 開發者：摳得柴柴</div>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 
