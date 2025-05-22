@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/coder220224/ticket-filter/refs/heads/main/images/icon128.png" alt="圖片描述" width="25"/>  搶票柴柴-售票網站篩選器
+# <img src="https://raw.githubusercontent.com/coder220224/ticket-filter/refs/heads/main/image/icon128.png" alt="圖片描述" width="25"/>  搶票柴柴-售票網站篩選器
 
 
 一個 Chrome 擴充功能，用於在各大售票網站上快速篩選您想要的區域票券。
