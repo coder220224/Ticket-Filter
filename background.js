@@ -19,6 +19,15 @@ let settings = {
   citylineKeywords: [],
   citylineHideSoldOut: false,
   
+  // JKFace
+  jkfaceKeywords: [],
+  jkfaceHideSoldOut: false,
+  
+  // 寬宏售票
+  khamKeywords: [],
+  khamBlacklist: [],
+  khamHideSoldOut: false,
+  
   // 全局设置
   extensionEnabled: true,
   showServerTime: true,
@@ -52,6 +61,13 @@ function loadSettings() {
     if (result.citylineKeywords) settings.citylineKeywords = result.citylineKeywords;
     if (result.citylineHideSoldOut !== undefined) settings.citylineHideSoldOut = result.citylineHideSoldOut;
     
+    if (result.jkfaceKeywords) settings.jkfaceKeywords = result.jkfaceKeywords;
+    if (result.jkfaceHideSoldOut !== undefined) settings.jkfaceHideSoldOut = result.jkfaceHideSoldOut;
+    
+    if (result.khamKeywords) settings.khamKeywords = result.khamKeywords;
+    if (result.khamBlacklist) settings.khamBlacklist = result.khamBlacklist;
+    if (result.khamHideSoldOut !== undefined) settings.khamHideSoldOut = result.khamHideSoldOut;
+    
     if (result.extensionEnabled !== undefined) settings.extensionEnabled = result.extensionEnabled;
     if (result.showServerTime !== undefined) settings.showServerTime = result.showServerTime;
     if (result.showFilterStatus !== undefined) settings.showFilterStatus = result.showFilterStatus;
@@ -73,6 +89,13 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     
     if (key === 'citylineKeywords') settings.citylineKeywords = changes[key].newValue;
     if (key === 'citylineHideSoldOut') settings.citylineHideSoldOut = changes[key].newValue;
+    
+    if (key === 'jkfaceKeywords') settings.jkfaceKeywords = changes[key].newValue;
+    if (key === 'jkfaceHideSoldOut') settings.jkfaceHideSoldOut = changes[key].newValue;
+    
+    if (key === 'khamKeywords') settings.khamKeywords = changes[key].newValue;
+    if (key === 'khamBlacklist') settings.khamBlacklist = changes[key].newValue;
+    if (key === 'khamHideSoldOut') settings.khamHideSoldOut = changes[key].newValue;
     
     if (key === 'extensionEnabled') settings.extensionEnabled = changes[key].newValue;
     if (key === 'showServerTime') settings.showServerTime = changes[key].newValue;
@@ -174,6 +197,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     
     // 根据不同网站和条件进行判断
     let siteKeywords = [];
+    let siteBlacklist = [];
     let siteHideSoldOut = false;
     
     if (site === 'tixcraft') {
@@ -193,6 +217,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (site === 'cityline') {
       siteKeywords = settings.citylineKeywords;
       siteHideSoldOut = settings.citylineHideSoldOut;
+    } else if (site === 'jkface') {
+      siteKeywords = settings.jkfaceKeywords;
+      siteHideSoldOut = settings.jkfaceHideSoldOut;
+    } else if (site === 'kham') {
+      siteKeywords = settings.khamKeywords;
+      siteBlacklist = settings.khamBlacklist;
+      siteHideSoldOut = settings.khamHideSoldOut;
     } else {
       sendResponse({ shouldShow: true }); // 不支持的网站直接显示
       return true;
@@ -237,6 +268,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       })
     );
     
+    // 检查黑名单
+    if (shouldShow && siteBlacklist && siteBlacklist.length > 0) {
+      const isBlacklisted = siteBlacklist.some(blacklistItem => {
+        return searchTexts.some(text => textIncludesKeyword(text, blacklistItem));
+      });
+      if (isBlacklisted) {
+        sendResponse({ shouldShow: false });
+        return true;
+      }
+    }
+    
     sendResponse({ shouldShow });
     return true;
   }
@@ -278,6 +320,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         showFilterStatus: settings.showFilterStatus,
         extensionEnabled: settings.extensionEnabled
       });
+    } else if (site === 'jkface') {
+      sendResponse({
+        keywords: settings.jkfaceKeywords,
+        hideSoldOut: settings.jkfaceHideSoldOut,
+        showServerTime: settings.showServerTime,
+        showFilterStatus: settings.showFilterStatus,
+        extensionEnabled: settings.extensionEnabled
+      });
+    } else if (site === 'kham') {
+      sendResponse({
+        keywords: settings.khamKeywords,
+        blacklist: settings.khamBlacklist,
+        hideSoldOut: settings.khamHideSoldOut,
+        showServerTime: settings.showServerTime,
+        showFilterStatus: settings.showFilterStatus,
+        extensionEnabled: settings.extensionEnabled
+      });
     } else {
       sendResponse({});
     }
@@ -297,4 +356,31 @@ chrome.runtime.onConnect.addListener((port) => {
 chrome.runtime.onStartup.addListener(() => {
   loadSettings();
   console.log('浏览器启动，搶票柴柴扩展已激活');
+});
+
+// 监听快捷键命令
+chrome.commands.onCommand.addListener((command) => {
+  // 检查快捷键是否启用
+  chrome.storage.local.get(['shortcutEnabled'], function(result) {
+    if (result.shortcutEnabled === false) {
+      return; // 如果快捷键被禁用，直接返回
+    }
+
+    if (command === 'toggle-extension') {
+      chrome.storage.local.get(['extensionEnabled'], function(result) {
+        const newState = !result.extensionEnabled;
+        chrome.storage.local.set({ extensionEnabled: newState }, function() {
+          // 向所有标签页广播状态变化
+          chrome.tabs.query({}, function(tabs) {
+            tabs.forEach(function(tab) {
+              chrome.tabs.sendMessage(tab.id, {
+                type: 'EXTENSION_STATE_CHANGED',
+                enabled: newState
+              });
+            });
+          });
+        });
+      });
+    }
+  });
 }); 

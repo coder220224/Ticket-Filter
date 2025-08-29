@@ -73,7 +73,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // 判斷當前網站
 function getCurrentSite() {
   const url = window.location.href;
-  if (url.includes('tixcraft.com')) {
+  if (url.includes('tixcraft.com') || url.includes('tixcraftweb-pcox.onrender.com')) {
     return 'tixcraft';
   } else if (url.includes('kktix.com')) {
     return 'kktix';
@@ -85,6 +85,18 @@ function getCurrentSite() {
     return 'ticket';
   } else if (url.includes('ticketplus.com.tw')) {
     return 'ticketplus';
+  } else if (url.includes('fami.life')) {
+    return 'fami';
+  } else if (url.includes('jkface.net')) {
+    return 'jkface';
+  } else if (url.includes('kham.com.tw')) {
+    return 'kham';
+  } else if (url.includes('tix.wdragons.com')) {
+    return 'fami';
+  } else if (url.includes('tix.ctbcsports.com')) {
+    return 'fami';
+  } else if (url.includes('tix.fubonbraves.com')) {
+    return 'fami';
   }
   return null;
 }
@@ -152,10 +164,17 @@ function convertNumber(input) {
   return Array.from(versions);
 }
 
-// 檢查文本是否包含關鍵字（考慮數字轉換）
+// 添加全角转半角函数
+function toHalfWidth(str) {
+  return str.replace(/[\uFF01-\uFF5E]/g, function(char) {
+    return String.fromCharCode(char.charCodeAt(0) - 0xFEE0);
+  });
+}
+
+// 修改文本匹配函数
 function textIncludesKeyword(text, keyword) {
   // 移除所有空格和逗號，並轉換為小寫再比較
-  const cleanText = text.replace(/[\s,]+/g, '').toLowerCase();
+  const cleanText = toHalfWidth(text.replace(/[\s,]+/g, '')).toLowerCase();
   
   // 處理 OR 邏輯（用 + 分隔）
   const orParts = keyword.split('+').map(part => part.trim());
@@ -167,12 +186,17 @@ function textIncludesKeyword(text, keyword) {
     
     // 所有 AND 條件都要符合才返回 true
     return andParts.every(andPart => {
-      // 移除關鍵字中的逗號
-      andPart = andPart.replace(/,/g, '');
+      // 移除關鍵字中的逗號，转换为半角
+      andPart = toHalfWidth(andPart.replace(/,/g, '')).toLowerCase();
+      
+      // 如果是单个字符的搜索，直接进行包含匹配
+      if (andPart.length === 1) {
+        return cleanText.includes(andPart.toLowerCase());
+      }
       
       // 獲取文本的所有可能版本（包含數字轉換）
       const textVersions = convertNumber(cleanText);
-      const keywordVersions = convertNumber(andPart.toLowerCase());
+      const keywordVersions = convertNumber(andPart);
       
       // 交叉比對所有版本
       return keywordVersions.some(kw => 
@@ -316,11 +340,78 @@ function loadSettings() {
         });
       }
     });
+  } else if (site === 'fami') {
+    chrome.storage.local.get(['famiKeywords', 'famiBlacklist', 'famiHideSoldOut'], (result) => {
+      if (result.famiKeywords) {
+        settings.keywords = result.famiKeywords;
+      }
+      if (result.famiBlacklist) {
+        settings.blacklist = result.famiBlacklist;
+      }
+      if (result.famiHideSoldOut !== undefined) {
+        settings.hideSoldOut = result.famiHideSoldOut;
+      }
+      if (document.readyState === 'complete') {
+        filterTickets();
+        showFilterStatus();
+      } else {
+        window.addEventListener('load', () => {
+          filterTickets();
+          showFilterStatus();
+        });
+      }
+    });
+  } else if (site === 'jkface') {
+    chrome.storage.local.get(['jkfaceKeywords', 'jkfaceBlacklist', 'jkfaceHideSoldOut'], (result) => {
+      if (result.jkfaceKeywords) {
+        settings.keywords = result.jkfaceKeywords;
+      }
+      if (result.jkfaceBlacklist) {
+        settings.blacklist = result.jkfaceBlacklist;
+      }
+      if (result.jkfaceHideSoldOut !== undefined) {
+        settings.hideSoldOut = result.jkfaceHideSoldOut;
+      }
+      if (document.readyState === 'complete') {
+        filterTickets();
+        showFilterStatus();
+      } else {
+        window.addEventListener('load', () => {
+          filterTickets();
+          showFilterStatus();
+        });
+      }
+    });
+  } else if (site === 'kham') {
+    chrome.storage.local.get(['khamKeywords', 'khamBlacklist', 'khamHideSoldOut'], (result) => {
+      if (result.khamKeywords) {
+        settings.keywords = result.khamKeywords;
+      }
+      if (result.khamBlacklist) {
+        settings.blacklist = result.khamBlacklist;
+      }
+      if (result.khamHideSoldOut !== undefined) {
+        settings.hideSoldOut = result.khamHideSoldOut;
+      }
+      
+      // 立即应用筛选
+      filterKhamTickets();
+      showFilterStatus();
+      
+      // 初始化观察器
+      initKhamObserver();
+    });
   }
 }
 
 // 初始化
 loadSettings();
+
+// 设置网站标识
+const currentSite = getCurrentSite();
+if (currentSite) {
+  document.body.setAttribute('data-site', currentSite);
+}
 
 // 確保預設設置被正確設置
 chrome.storage.local.get(['showServerTime', 'showFilterStatus'], function(result) {
@@ -369,6 +460,15 @@ style.textContent = `
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
   }
 
+  /* 寬宏售票平台特定樣式 */
+  body[data-site="kham"] .server-time-display {
+    min-width: 120px;
+    text-align: center;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-variant-numeric: tabular-nums;
+  }
+
   /* 遠大售票平台平滑過渡效果 */
   .v-expansion-panels.seats-area .v-expansion-panel {
     opacity: 0.1;
@@ -377,6 +477,29 @@ style.textContent = `
   
   .v-expansion-panels.seats-area .v-expansion-panel.filter-processed {
     opacity: 1;
+  }
+
+  /* 新版ibon售票网站样式 */
+  tr.ng-star-inserted.hidden-by-extension {
+    display: none !important;
+  }
+
+  /* 确保隐藏的行真的被隐藏 */
+  tr.hidden-by-extension,
+  tr.hidden-by-extension * {
+    display: none !important;
+  }
+
+  /* Fami Life 平台初始化隐藏样式 */
+  body.fami-loading .saleTr {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    transition: opacity 0.2s ease-in-out !important;
+  }
+
+  body.fami-ready .saleTr {
+    visibility: visible !important;
+    transition: opacity 0.2s ease-in-out !important;
   }
 `;
 document.head.appendChild(style);
@@ -435,7 +558,7 @@ function showFilterStatus() {
         statusText.push('無篩選條件');
       }
       if (settings.hideSoldOut) {
-        statusText.push('不顯示已售完票券');
+        statusText.push('隱藏已售完票券');
       }
     } else if (site === 'kktix') {
       let hasFilter = false;
@@ -451,7 +574,7 @@ function showFilterStatus() {
         statusText.push('無篩選條件');
       }
       if (settings.hideSoldOut) {
-        statusText.push('不顯示已售完票券');
+        statusText.push('隱藏已售完票券');
       }
     } else if (site === 'ibon') {
       let hasFilter = false;
@@ -467,7 +590,7 @@ function showFilterStatus() {
         statusText.push('無篩選條件');
       }
       if (settings.hideSoldOut) {
-        statusText.push('不顯示已售完票券');
+        statusText.push('隱藏已售完票券');
       }
     } else if (site === 'cityline') {
       let hasFilter = false;
@@ -483,7 +606,7 @@ function showFilterStatus() {
         statusText.push('無篩選條件');
       }
       if (settings.hideSoldOut) {
-        statusText.push('不顯示已售完票券');
+        statusText.push('隱藏已售完票券');
       }
     } else if (site === 'ticket') {
       let hasFilter = false;
@@ -499,7 +622,7 @@ function showFilterStatus() {
         statusText.push('無篩選條件');
       }
       if (settings.hideSoldOut) {
-        statusText.push('不顯示已售完票券');
+        statusText.push('隱藏已售完票券');
       }
     } else if (site === 'ticketplus') {
       let hasFilter = false;
@@ -515,7 +638,55 @@ function showFilterStatus() {
         statusText.push('無篩選條件');
       }
       if (settings.hideSoldOut) {
-        statusText.push('不顯示已售完票券');
+        statusText.push('隱藏已售完票券');
+      }
+    } else if (site === 'fami') {
+      let hasFilter = false;
+      if (settings.keywords && settings.keywords.length > 0) {
+        statusText.push(`關鍵字篩選：${settings.keywords.join('、')}`);
+        hasFilter = true;
+      }
+      if (settings.blacklist && settings.blacklist.length > 0) {
+        statusText.push(`黑名單：${settings.blacklist.join('、')}`);
+        hasFilter = true;
+      }
+      if (!hasFilter) {
+        statusText.push('無篩選條件');
+      }
+      if (settings.hideSoldOut) {
+        statusText.push('隱藏已售完票券');
+      }
+    } else if (site === 'jkface') {
+      let hasFilter = false;
+      if (settings.keywords && settings.keywords.length > 0) {
+        statusText.push(`關鍵字篩選：${settings.keywords.join('、')}`);
+        hasFilter = true;
+      }
+      if (settings.blacklist && settings.blacklist.length > 0) {
+        statusText.push(`黑名單：${settings.blacklist.join('、')}`);
+        hasFilter = true;
+      }
+      if (!hasFilter) {
+        statusText.push('無篩選條件');
+      }
+      if (settings.hideSoldOut) {
+        statusText.push('隱藏已售完票券');
+      }
+    } else if (site === 'kham') {
+      let hasFilter = false;
+      if (settings.keywords && settings.keywords.length > 0) {
+        statusText.push(`關鍵字篩選：${settings.keywords.join('、')}`);
+        hasFilter = true;
+      }
+      if (settings.blacklist && settings.blacklist.length > 0) {
+        statusText.push(`黑名單：${settings.blacklist.join('、')}`);
+        hasFilter = true;
+      }
+      if (!hasFilter) {
+        statusText.push('無篩選條件');
+      }
+      if (settings.hideSoldOut) {
+        statusText.push('隱藏已售完票券');
       }
     }
     
@@ -543,9 +714,10 @@ function showAllAreas() {
   } else if (site === 'ibon') {
     function showAllTickets(element) {
       if (element.shadowRoot) {
-        const rows = element.shadowRoot.querySelectorAll('tr[id^="B"]');
+        // 同时支持新旧两种选择器
+        const rows = element.shadowRoot.querySelectorAll('tr[id^="B"], tr[_ngcontent-tpp-c65].ng-star-inserted, tr[_ngcontent-hxg-c65].ng-star-inserted, tr[_ngcontent-njn-c65].ng-star-inserted');
         rows.forEach(row => {
-          // 移除所有由擴充功能添加的樣式和類別
+          // 移除所有由扩充功能添加的样式和类别
           row.style.removeProperty('display');
           row.classList.remove('hidden-by-extension');
           row.classList.remove('filter-processed');
@@ -554,7 +726,7 @@ function showAllAreas() {
           });
         });
         
-        // 移除 shadow root 中的過濾樣式
+        // 移除 shadow root 中的过滤样式
         const filterStyle = element.shadowRoot.querySelector('.extension-filter-style');
         if (filterStyle) {
           filterStyle.remove();
@@ -564,7 +736,7 @@ function showAllAreas() {
     }
     showAllTickets(document.documentElement);
     
-    // 強制更新頁面狀態
+    // 强制更新页面状态
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
     }, 100);
@@ -580,6 +752,35 @@ function showAllAreas() {
     document.querySelectorAll('.v-expansion-panels.seats-area .v-expansion-panel').forEach(panel => {
       panel.style.display = '';
       panel.classList.add('filter-processed');
+    });
+  } else if (site === 'fami') {
+    // 移除所有已应用的样式
+    document.querySelectorAll('.saleTr').forEach(row => {
+      // 移除所有可能影响显示的样式
+      row.style.removeProperty('display');
+      row.style.removeProperty('opacity');
+      row.style.removeProperty('visibility');
+      row.style.removeProperty('transition');
+      row.classList.remove('filter-ready');
+    });
+    
+    // 移除可能存在的全局样式
+    const earlyStyle = document.getElementById('ticket-filter-early-style-fami');
+    if (earlyStyle) {
+      earlyStyle.remove();
+    }
+  } else if (site === 'jkface') {
+    // 显示所有票券
+    document.querySelectorAll('form').forEach(form => {
+      const parentElement = form.closest('.border');
+      if (parentElement) {
+        parentElement.style.display = '';
+      }
+    });
+  } else if (site === 'kham') {
+    // 显示所有票券
+    document.querySelectorAll('tr.status_tr').forEach(row => {
+      row.style.display = '';
     });
   }
   
@@ -606,7 +807,7 @@ async function filterTickets() {
     const site = getCurrentSite();
     
     // 根據不同網站執行對應的過濾邏輯
-    if (site === 'tixcraft' && window.location.href.includes('/ticket/area/')) {
+    if (site === 'tixcraft' && (window.location.href.includes('/ticket/area/') || window.location.hostname.includes('tixcraftweb-pcox.onrender.com'))) {
       await filterTixcraftTickets();
     } else if (site === 'kktix' && document.querySelector('.ticket-unit')) {
       await filterKKTIXTickets();
@@ -618,6 +819,12 @@ async function filterTickets() {
       await filterTicketComTickets();
     } else if (site === 'ticketplus') {
       await filterTicketPlusTickets();
+    } else if (site === 'fami') {
+      await filterFamiTickets();
+    } else if (site === 'jkface') {
+      await filterJKFaceTickets();
+    } else if (site === 'kham') {
+      await filterKhamTickets();  // 作为一个分支加入通用的 filterTickets 函数
     }
     
     // 通知早期加載腳本，過濾已完成
@@ -658,17 +865,20 @@ async function filterKKTIXTickets() {
     
     if (priceElement && nameElement) {
       const price = priceElement.textContent.trim();
-      const name = nameElement.textContent.trim();
-      const text = name + ' ' + price;
+      // 获取票区名称并清理多余空格和注释
+      const name = nameElement.textContent
+        .replace(/<!--[\s\S]*?-->/g, '') // 移除 HTML 注释
+        .replace(/\s+/g, '') // 移除所有空格
+        .trim();
+      
+      const text = `${name} ${price}`;
       const isSoldOut = row.textContent.includes('已售完');
       
       // 檢查是否在黑名單中
       const isBlacklisted = settings.blacklist && settings.blacklist.length > 0 && 
         settings.blacklist.some(blacklistItem => {
-          // 處理 OR 邏輯（用 + 分隔）
           const orParts = blacklistItem.split('+').map(part => part.trim());
           return orParts.some(orPart => {
-            // 處理 AND 邏輯（用 , 分隔）
             const andParts = orPart.split(',').map(part => part.trim());
             return andParts.every(andPart => textIncludesKeyword(text, andPart));
           });
@@ -677,12 +887,16 @@ async function filterKKTIXTickets() {
       // 檢查是否符合關鍵字
       const matchesKeyword = settings.keywords.length === 0 || 
         settings.keywords.some(keyword => {
-          // 處理 OR 邏輯（用 + 分隔）
           const orParts = keyword.split('+').map(part => part.trim());
           return orParts.some(orPart => {
-            // 處理 AND 邏輯（用 , 分隔）
             const andParts = orPart.split(',').map(part => part.trim());
-            return andParts.every(andPart => textIncludesKeyword(text, andPart));
+            return andParts.every(andPart => {
+              // 如果是单字符，使用更宽松的匹配
+              if (andPart.length === 1) {
+                return text.toLowerCase().includes(andPart.toLowerCase());
+              }
+              return textIncludesKeyword(text, andPart);
+            });
           });
         });
 
@@ -712,11 +926,13 @@ async function filterKKTIXTickets() {
 
 // 拓元票券篩選
 async function filterTixcraftTickets() {
-  await waitForElement('.zone-label[data-id]');
-  
-  const areaGroups = document.querySelectorAll('.zone-label[data-id]');
-  if (!areaGroups.length) return;
+  // 等待任一種格式的區域列表出現
+  await Promise.race([
+    waitForElement('.zone-label[data-id]'),
+    waitForElement('.zone.area-list ul.area-list')
+  ]);
 
+  // 先顯示所有區域
   showAllAreas();
 
   // 如果沒有任何篩選條件，只處理是否隱藏已售完
@@ -734,76 +950,151 @@ async function filterTixcraftTickets() {
     return;
   }
 
-  areaGroups.forEach(group => {
-    const groupId = group.dataset.id;
-    const areaList = document.getElementById(groupId);
-    if (!areaList) return;
+  // 處理有價格區標題的格式
+  const areaGroups = document.querySelectorAll('.zone-label[data-id]');
+  if (areaGroups.length > 0) {
+    areaGroups.forEach(group => {
+      const groupId = group.dataset.id;
+      const areaList = document.getElementById(groupId);
+      if (!areaList) return;
 
-    const items = areaList.querySelectorAll('li');
-    let hasVisibleItems = false;
+      const items = areaList.querySelectorAll('li');
+      let hasVisibleItems = false;
 
-    const groupTitle = group.querySelector('b')?.textContent.trim() || group.textContent.trim();
+      const groupTitle = group.querySelector('b')?.textContent.trim() || '';
 
-    items.forEach(item => {
-      const areaText = item.textContent.trim();
-      const remainingText = item.querySelector('font')?.textContent.trim() || '';
-      const isSoldOut = remainingText.includes('已售完');
-      const fullText = groupTitle + ' ' + areaText;
+      items.forEach(item => {
+        const areaText = item.textContent.trim();
+        const remainingText = item.querySelector('font')?.textContent.trim() || '';
+        const isSoldOut = remainingText.includes('已售完');
+        const fullText = groupTitle ? `${groupTitle} ${areaText}` : areaText;
 
-      // 檢查是否在黑名單中
-      const isBlacklisted = isInBlacklist(fullText, settings.blacklist);
-      
-      // 檢查是否符合關鍵字
-      const matchesKeyword = settings.keywords.length === 0 || settings.keywords.some(keyword => 
-        textIncludesKeyword(fullText, keyword)
-      );
+        let shouldShow = processTicketItem(fullText, isSoldOut);
+        item.style.display = shouldShow ? '' : 'none';
+        if (shouldShow) hasVisibleItems = true;
+      });
 
-      // 決定是否顯示
-      let shouldShow = true;
+      group.style.display = hasVisibleItems ? '' : 'none';
+    });
+  } else {
+    // 處理沒有價格區標題的格式
+    const areaLists = document.querySelectorAll('.zone.area-list ul.area-list');
+    areaLists.forEach(list => {
+      const items = list.querySelectorAll('li');
+      items.forEach(item => {
+        const areaText = item.textContent.trim();
+        const remainingText = item.querySelector('font')?.textContent.trim() || '';
+        const isSoldOut = remainingText.includes('已售完');
 
-      // 如果有黑名單項目且符合黑名單，則不顯示
-      if (settings.blacklist && settings.blacklist.length > 0 && isBlacklisted) {
-        shouldShow = false;
-      }
+        let shouldShow = processTicketItem(areaText, isSoldOut);
+        item.style.display = shouldShow ? '' : 'none';
+      });
+    });
+  }
+}
 
-      // 如果有關鍵字且不符合關鍵字，則不顯示
-      if (settings.keywords.length > 0 && !matchesKeyword) {
-        shouldShow = false;
-      }
-
-      // 如果設定隱藏已售完且已售完，則不顯示
-      if (settings.hideSoldOut && isSoldOut) {
-        shouldShow = false;
-      }
-
-      item.style.display = shouldShow ? '' : 'none';
-      if (shouldShow) {
-        hasVisibleItems = true;
-      }
+// 處理單個票券項目的邏輯
+function processTicketItem(text, isSoldOut) {
+  // 檢查是否在黑名單中
+  const isBlacklisted = settings.blacklist && settings.blacklist.length > 0 && 
+    settings.blacklist.some(blacklistItem => {
+      const orParts = blacklistItem.split('+').map(part => part.trim());
+      return orParts.some(orPart => {
+        const andParts = orPart.split(',').map(part => part.trim());
+        return andParts.every(andPart => textIncludesKeyword(text, andPart));
+      });
     });
 
-    group.style.display = hasVisibleItems ? '' : 'none';
-  });
+  // 檢查是否符合關鍵字
+  const matchesKeyword = settings.keywords.length === 0 || 
+    settings.keywords.some(keyword => {
+      const orParts = keyword.split('+').map(part => part.trim());
+      return orParts.some(orPart => {
+        const andParts = orPart.split(',').map(part => part.trim());
+        return andParts.every(andPart => textIncludesKeyword(text, andPart));
+      });
+    });
+
+  // 決定是否顯示
+  let shouldShow = true;
+
+  if (isBlacklisted) shouldShow = false;
+  if (settings.keywords.length > 0 && !matchesKeyword) shouldShow = false;
+  if (settings.hideSoldOut && isSoldOut) shouldShow = false;
+
+  return shouldShow;
 }
 
 // ibon票券篩選
 async function filterIbonTickets() {
-  function processTicketAreas(element) {
-    if (element.shadowRoot) {
-      const rows = element.shadowRoot.querySelectorAll('tr[id^="B"]');
-      if (rows.length > 0) {
-        rows.forEach(row => {
-          // 只保留篩選邏輯，移除 shadowRoot 處理
-          const areaCell = row.querySelector('td[data-title="票區"]');
-          const priceCell = row.querySelector('td[data-title="票價(NT$)"]');
-          
-          if (areaCell && priceCell) {
+  const url = window.location.href;
+  const isNewVersion = url.match(/Event\/[A-Z0-9]+\/[A-Z0-9]+/);
+  const isOldVersion = url.includes('UTK0201_000.aspx');
+
+  // 调试信息
+  console.log('当前URL:', url);
+  console.log('是否新版:', isNewVersion);
+  console.log('是否旧版:', isOldVersion);
+  console.log('当前设置:', settings);
+
+  if (isNewVersion) {
+    // 新版 ibon 处理逻辑
+    async function handleNewVersion() {
+      // 确保页面处于加载状态
+      document.body.classList.add('ibon-loading');
+
+      // 等待表格加载
+      const table = await waitForElement('table.table');
+      if (!table) {
+        console.log('未找到表格');
+        return;
+      }
+
+      // 等待行加载完成
+      await new Promise(resolve => {
+        const checkRows = () => {
+          const rows = table.querySelectorAll('tbody > tr.ng-star-inserted');
+          if (rows.length > 0) {
+            resolve();
+          } else {
+            setTimeout(checkRows, 50);
+          }
+        };
+        checkRows();
+      });
+
+      // 获取所有行
+      const rows = Array.from(table.querySelectorAll('tbody > tr.ng-star-inserted'));
+      console.log('找到有效行数:', rows.length);
+
+      // 先重置所有行的状态
+      rows.forEach(row => {
+        row.style.removeProperty('display');
+        row.classList.remove('hidden-by-extension');
+      });
+
+      // 处理筛选
+      if (settings.keywords.length > 0 || 
+          (settings.blacklist && settings.blacklist.length > 0) || 
+          settings.hideSoldOut) {
+        
+        rows.forEach((row, index) => {
+          const areaCell = row.querySelector('td[data-title="票區"]') || row.cells[0];
+          const priceCell = row.querySelector('td[data-title="票價(NT$)"]') || row.cells[1];
+          const statusCell = row.querySelector('td[data-title="空位"]') || row.cells[2];
+
+          if (areaCell && priceCell && statusCell) {
             const areaText = areaCell.textContent.trim();
             const priceText = priceCell.textContent.replace(/,/g, '').trim();
+            const statusText = statusCell.textContent.trim();
             const fullText = `${areaText} ${priceText}`;
-            const isSoldOut = row.textContent.includes('售完');
 
-            // 檢查是否在黑名單中
+            // 检查售完状态
+            const isSoldOut = row.classList.contains('disabled') || 
+                            statusText.includes('已售完') || 
+                            statusText.includes('0');
+
+            // 检查是否在黑名单中
             const isBlacklisted = settings.blacklist && settings.blacklist.length > 0 && 
               settings.blacklist.some(blacklistItem => {
                 const orParts = blacklistItem.split('+').map(part => part.trim());
@@ -812,8 +1103,8 @@ async function filterIbonTickets() {
                   return andParts.every(andPart => textIncludesKeyword(fullText, andPart));
                 });
               });
-            
-            // 檢查是否符合關鍵字
+
+            // 检查是否匹配关键字
             const matchesKeyword = settings.keywords.length === 0 || 
               settings.keywords.some(keyword => {
                 const orParts = keyword.split('+').map(part => part.trim());
@@ -823,36 +1114,123 @@ async function filterIbonTickets() {
                 });
               });
 
-            // 決定是否顯示
-            let shouldShow = true;
-
-            if (isBlacklisted) shouldShow = false;
-            if (settings.keywords.length > 0 && !matchesKeyword) shouldShow = false;
-            if (settings.hideSoldOut && isSoldOut) shouldShow = false;
-
-            // 應用顯示/隱藏狀態
-            if (!shouldShow) {
+            if (isBlacklisted || 
+                (settings.keywords.length > 0 && !matchesKeyword) || 
+                (settings.hideSoldOut && isSoldOut)) {
               row.style.setProperty('display', 'none', 'important');
               row.classList.add('hidden-by-extension');
-              Array.from(row.children).forEach(cell => {
-                cell.style.setProperty('display', 'none', 'important');
-              });
-            } else {
-              row.style.removeProperty('display');
-              row.classList.remove('hidden-by-extension');
-              Array.from(row.children).forEach(cell => {
-                cell.style.removeProperty('display');
-              });
             }
           }
         });
       }
+
+      // 完成处理后移除加载状态
+      requestAnimationFrame(() => {
+        document.body.classList.remove('ibon-loading');
+      });
     }
+
+    // 在 DOMContentLoaded 时立即执行一次
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', handleNewVersion);
+    } else {
+      handleNewVersion();
+    }
+
+    // 设置防抖定时器
+    let debounceTimer;
     
-    Array.from(element.children || []).forEach(processTicketAreas);
+    // 设置观察器以处理动态加载的内容
+    const observer = new MutationObserver(() => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      
+      debounceTimer = setTimeout(handleNewVersion, 250);
+    });
+
+    // 观察整个文档的变化
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'disabled']
+    });
+
+    return;
+  }
+  
+  if (isOldVersion) {
+    // 旧版 ibon 处理逻辑
+    function processTicketAreas(element) {
+      if (element.shadowRoot) {
+        const rows = element.shadowRoot.querySelectorAll('tr[id^="B"]');
+        if (rows.length > 0) {
+          // 先隐藏所有行
+          rows.forEach(row => {
+            row.style.setProperty('display', 'none', 'important');
+          });
+          processOldVersionRows(rows);
+        }
+      }
+      Array.from(element.children || []).forEach(processTicketAreas);
+    }
+
+    processTicketAreas(document.documentElement);
   }
 
-  processTicketAreas(document.documentElement);
+  // 旧版 ibon 的行处理函数
+  function processOldVersionRows(rows) {
+    rows.forEach(row => {
+      const areaCell = row.cells[1];
+      const priceCell = row.cells[2];
+      const statusCell = row.cells[3];
+      
+      if (areaCell && priceCell) {
+        const areaText = areaCell.textContent.trim();
+        const priceText = priceCell.textContent.replace(/,/g, '').trim();
+        const fullText = `${areaText} ${priceText}`;
+        
+        // 检查售完状态
+        const isSoldOut = row.classList.contains('disabled') || 
+                         (statusCell && statusCell.textContent.includes('已售完'));
+
+        // 检查是否在黑名单中
+        const isBlacklisted = settings.blacklist && settings.blacklist.length > 0 && 
+          settings.blacklist.some(blacklistItem => {
+            const orParts = blacklistItem.split('+').map(part => part.trim());
+            return orParts.some(orPart => {
+              const andParts = orPart.split(',').map(part => part.trim());
+              return andParts.every(andPart => textIncludesKeyword(fullText, andPart));
+            });
+          });
+        
+        // 检查是否符合关键字
+        const matchesKeyword = settings.keywords.length === 0 || 
+          settings.keywords.some(keyword => {
+            const orParts = keyword.split('+').map(part => part.trim());
+            return orParts.some(orPart => {
+              const andParts = orPart.split(',').map(part => part.trim());
+              return andParts.every(andPart => textIncludesKeyword(fullText, andPart));
+            });
+          });
+
+        // 决定是否显示
+        let shouldShow = true;
+
+        if (isBlacklisted) shouldShow = false;
+        if (settings.keywords.length > 0 && !matchesKeyword) shouldShow = false;
+        if (settings.hideSoldOut && isSoldOut) shouldShow = false;
+
+        // 应用显示/隐藏状态
+        if (shouldShow) {
+          row.style.removeProperty('display');
+        } else {
+          row.style.setProperty('display', 'none', 'important');
+        }
+      }
+    });
+  }
 }
 
 // Cityline票券篩選
@@ -1103,6 +1481,85 @@ async function filterTicketPlusTickets() {
   });
 }
 
+// Fami Life 票券篩選
+async function filterFamiTickets() {
+  // 等待票券列表加載
+  await waitForElement('.saleTr');
+  
+  const ticketRows = document.querySelectorAll('.saleTr');
+  if (!ticketRows.length) return;
+
+  // 处理过滤逻辑
+  ticketRows.forEach(row => {
+    const areaCell = row.querySelector('[data-title="票區："]');
+    const priceCell = row.querySelector('.textPrice');
+    const statusCell = row.querySelector('#SEAT');
+    
+    if (areaCell && priceCell) {
+      const areaText = areaCell.textContent.trim();
+      const priceText = priceCell.textContent.trim();
+      const fullText = `${areaText} ${priceText}`;
+      const isSoldOut = statusCell && statusCell.textContent.trim().includes('售完');
+
+      // 檢查是否在黑名單中
+      const isBlacklisted = settings.blacklist && settings.blacklist.length > 0 && 
+        settings.blacklist.some(blacklistItem => {
+          const orParts = blacklistItem.split('+').map(part => part.trim());
+          return orParts.some(orPart => {
+            const andParts = orPart.split(',').map(part => part.trim());
+            return andParts.every(andPart => textIncludesKeyword(fullText, andPart));
+          });
+        });
+
+      // 檢查是否符合關鍵字
+      const matchesKeyword = settings.keywords.length === 0 || 
+        settings.keywords.some(keyword => {
+          const orParts = keyword.split('+').map(part => part.trim());
+          return orParts.some(orPart => {
+            const andParts = orPart.split(',').map(part => part.trim());
+            return andParts.every(andPart => textIncludesKeyword(fullText, andPart));
+          });
+        });
+
+      // 決定是否顯示
+      let shouldShow = true;
+
+      if (isBlacklisted) shouldShow = false;
+      if (settings.keywords.length > 0 && !matchesKeyword) shouldShow = false;
+      if (settings.hideSoldOut && isSoldOut) shouldShow = false;
+
+      // 应用显示/隐藏状态
+      if (!shouldShow) {
+        row.style.setProperty('display', 'none', 'important');
+      } else {
+        row.style.removeProperty('display');
+      }
+    }
+  });
+
+  // 通知 earlyLoader 筛选已完成
+  window.postMessage({ type: 'FILTER_APPLIED' }, '*');
+}
+
+// 在页面加载时初始化 Fami Life 平台
+if (getCurrentSite() === 'fami') {
+  // 在 DOMContentLoaded 时执行初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      filterFamiTickets();
+    });
+  } else {
+    filterFamiTickets();
+  }
+  
+  // 监听消息以处理动态加载的内容
+  window.addEventListener('message', function(event) {
+    if (event.data.type === 'NEW_TICKETS_FOUND') {
+      filterFamiTickets();
+    }
+  });
+}
+
 // 新增：檢查文本是否在黑名單中
 function isInBlacklist(text, blacklist) {
   if (!blacklist || blacklist.length === 0) return false;
@@ -1131,9 +1588,45 @@ function isInBlacklist(text, blacklist) {
   });
 }
 
-// 監聽來自popup的訊息
+// 监听来自background.js的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   try {
+    // 处理快捷键触发的扩展状态变化
+    if (request.type === 'EXTENSION_STATE_CHANGED') {
+      const enabled = request.enabled;
+      const site = getCurrentSite();
+      
+      // 更新UI状态
+      if (enabled) {
+        // 重新应用过滤器
+        filterTickets();
+        showFilterStatus();
+        showServerTime();
+      } else {
+        // 显示所有区域
+        showAllAreas();
+        // 移除状态显示
+        const notification = document.querySelector('.ticket-filter-notification');
+        const timeDisplay = document.querySelector('.server-time-display');
+        if (notification) notification.remove();
+        if (timeDisplay) timeDisplay.remove();
+
+        // 特别处理 Fami Life 平台
+        if (site === 'fami') {
+          // 移除所有已应用的样式
+          document.querySelectorAll('.saleTr').forEach(row => {
+            row.style.removeProperty('display');
+            row.style.removeProperty('opacity');
+            row.style.removeProperty('visibility');
+            row.style.removeProperty('transition');
+            row.classList.remove('filter-ready');
+          });
+        }
+      }
+      
+      return true;
+    }
+    
     const site = getCurrentSite();
     
     // 處理拓元的消息
@@ -1264,12 +1757,53 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     // 在 ibon 票券頁面時觸發重整
-    if (site === 'ibon' && location.href.includes('UTK0201_000.aspx')) {
+    if (site === 'ibon' && (
+      location.href.includes('UTK0201_000.aspx') || 
+      location.href.match(/Event\/[A-Z0-9]+\/[A-Z0-9]+/)
+    )) {
       console.log("ibon票券頁面，自動重整頁面");
       setTimeout(() => location.reload(), 100); // 簡短延遲後重整
     }
+
+    // 處理 Fami Life 的消息
+    if (site === 'fami') {
+      if (request.type === 'UPDATE_FAMI_SETTINGS') {
+        settings.keywords = request.settings.keywords || [];
+        settings.blacklist = request.settings.blacklist || [];
+        settings.hideSoldOut = request.settings.hideSoldOut || false;
+        filterTickets();
+        showFilterStatus();
+        sendResponse({ success: true });
+      }
+    }
+
+    // JKFace票券篩選
+    if (site === 'jkface') {
+      if (request.type === 'UPDATE_JKFACE_SETTINGS') {
+        settings.keywords = request.settings.keywords || [];
+        settings.blacklist = request.settings.blacklist || [];
+        settings.hideSoldOut = request.settings.hideSoldOut || false;
+        filterTickets();
+        showFilterStatus();
+        sendResponse({ success: true });
+      }
+    }
+
+    // 在 chrome.runtime.onMessage.addListener 中添加对寬宏售票的处理
+    if (site === 'kham') {
+      if (request.type === 'UPDATE_KHAM_SETTINGS') {
+        settings.keywords = request.settings.keywords || [];
+        settings.blacklist = request.settings.blacklist || [];
+        settings.hideSoldOut = request.settings.hideSoldOut || false;
+        
+        // 改用通用的 filterTickets
+        filterTickets();
+        showFilterStatus();
+        sendResponse({ success: true });
+      }
+    }
   } catch (error) {
-    console.log('處理訊息時發生錯誤：', error);
+    console.error('處理訊息時發生錯誤：', error);
     sendResponse({ success: false, error: error.message });
   }
   return true;
@@ -1277,7 +1811,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // 初始執行
 const site = getCurrentSite();
-if (site === 'tixcraft' || site === 'kktix' || site === 'ibon' || site === 'cityline' || site === 'ticket' || site === 'ticketplus') {
+if (site === 'tixcraft' || site === 'kktix' || site === 'ibon' || site === 'cityline' || 
+    site === 'ticket' || site === 'ticketplus' || site === 'fami' || site === 'jkface' || site === 'kham') {  // 添加 kham
   if (document.readyState === 'complete') {
     showFilterStatus();
     filterTickets();
@@ -1320,6 +1855,12 @@ const observer = new MutationObserver((mutations) => {
     } else if (site === 'ticket') {
       filterTickets();
     } else if (site === 'ticketplus') {
+      filterTickets();
+    } else if (site === 'fami') {
+      filterTickets();
+    } else if (site === 'jkface') {
+      filterTickets();
+    } else if (site === 'kham') {  
       filterTickets();
     }
   }, debounceTime);
@@ -1512,14 +2053,23 @@ document.documentElement.setAttribute('pageLoadStrategy', 'eager');
 // 在頁面載入和切換時重新載入設定
 document.addEventListener('DOMContentLoaded', () => {
   const site = getCurrentSite();
-  if (site === 'ibon') {
-    chrome.storage.local.get(['ibonKeywords', 'ibonBlacklist', 'ibonHideSoldOut'], (result) => {
-      settings.keywords = result.ibonKeywords || [];
-      settings.blacklist = result.ibonBlacklist || [];
-      settings.hideSoldOut = result.ibonHideSoldOut || false;
-      filterTickets();
-      showFilterStatus();
-    });
+  if (site) {
+    // 设置网站标识
+    document.body.setAttribute('data-site', site);
+    
+    if (site === 'ibon') {
+      // 同时支持新旧两种URL格式
+      if (location.href.includes('UTK0201_000.aspx') || 
+          location.href.match(/Event\/[A-Z0-9]+\/[A-Z0-9]+/)) {
+        chrome.storage.local.get(['ibonKeywords', 'ibonBlacklist', 'ibonHideSoldOut'], (result) => {
+          settings.keywords = result.ibonKeywords || [];
+          settings.blacklist = result.ibonBlacklist || [];
+          settings.hideSoldOut = result.ibonHideSoldOut || false;
+          filterTickets();
+          showFilterStatus();
+        });
+      }
+    }
   }
 });
 
@@ -1534,4 +2084,388 @@ function getDebounceTime() {
     default:
       return 50;   // 其他網站使用短延遲
   }
-} 
+}
+
+function isIbonTicketPage(url) {
+  return url.includes('ibon.com.tw/application/UTK0201_000.aspx') || 
+         url.includes('ibon.com.tw/Event/');  // 简化匹配规则
+}
+
+// 在页面加载最开始就注入样式
+const earlyStyle = document.createElement('style');
+earlyStyle.textContent = `
+  /* 新版ibon售票网站初始化样式 */
+  body.ibon-loading table.table,
+  body.ibon-loading tr.ng-star-inserted {
+    display: none !important;
+  }
+
+  tr.ng-star-inserted.hidden-by-extension {
+    display: none !important;
+  }
+`;
+document.head.appendChild(earlyStyle);
+
+// 尽早执行初始化隐藏
+function initializeIbonHiding() {
+  if (window.location.href.match(/ibon\.com\.tw\/Event\/[A-Z0-9]+\/[A-Z0-9]+/)) {
+    document.body.classList.add('ibon-loading');
+  }
+}
+
+// 在最早可能的时机执行隐藏
+initializeIbonHiding();
+document.addEventListener('DOMContentLoaded', initializeIbonHiding);
+
+// 确保在动态加载的表格上也应用隐藏
+const earlyObserver = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    if (mutation.type === 'childList') {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeName === 'TABLE' && node.classList.contains('table')) {
+          node.classList.add('ibon-early-hide');
+        }
+      });
+    }
+  }
+});
+
+earlyObserver.observe(document.documentElement, {
+  childList: true,
+  subtree: true
+});
+
+// JKFace票券篩選
+async function filterJKFaceTickets() {
+  // 检查是否在活动详情页面
+  const isEventPage = window.location.href.includes('/events/');
+  
+  if (isEventPage) {
+    // 处理活动详情页面的场次列表
+    const eventSections = document.querySelectorAll('section.mx-3');
+    if (!eventSections.length) return;
+
+    eventSections.forEach(section => {
+      // 获取完整的场次信息，包括日期、时间和表演者名字
+      const timeAndPerformerText = section.querySelector('span[class*="text-"][class*="leading-"]')?.textContent.trim() || '';
+      const statusButton = section.querySelector('button[disabled]');
+      const isSoldOut = statusButton && (
+        statusButton.textContent.includes('已售完') || 
+        statusButton.textContent.includes('售完') ||
+        statusButton.textContent.includes('全數售罄') ||
+        statusButton.textContent.includes('尚未開始')
+      );
+
+      let shouldHide = false;
+
+      // 检查关键字匹配
+      if (settings.keywords && settings.keywords.length > 0) {
+        const matchesKeyword = settings.keywords.some(keyword => {
+          // 处理数字关键字 - 移除逗号后比较
+          const cleanKeyword = keyword.replace(/,/g, '');
+          if (!isNaN(cleanKeyword)) {
+            // 如果是数字，尝试匹配时间
+            return timeAndPerformerText.includes(cleanKeyword);
+          }
+          
+          // 非数字关键字进行 OR/AND 处理
+          const orParts = keyword.split('+').map(part => part.trim());
+          return orParts.some(orPart => {
+            const andParts = orPart.split(',').map(part => part.trim());
+            return andParts.every(andPart => {
+              // 如果是单个字符，使用简单包含匹配
+              if (andPart.length === 1) {
+                return timeAndPerformerText.toLowerCase().includes(andPart.toLowerCase());
+              }
+              return textIncludesKeyword(timeAndPerformerText, andPart);
+            });
+          });
+        });
+        
+        if (!matchesKeyword) shouldHide = true;
+      }
+
+      // 检查黑名单匹配
+      if (settings.blacklist && settings.blacklist.length > 0) {
+        const isBlacklisted = settings.blacklist.some(blacklistItem => {
+          // 处理数字黑名单 - 移除逗号后比较
+          const cleanBlacklistItem = blacklistItem.replace(/,/g, '');
+          if (!isNaN(cleanBlacklistItem)) {
+            return timeAndPerformerText.includes(cleanBlacklistItem);
+          }
+          
+          const orParts = blacklistItem.split('+').map(part => part.trim());
+          return orParts.some(orPart => {
+            const andParts = orPart.split(',').map(part => part.trim());
+            return andParts.every(andPart => {
+              // 如果是单个字符，使用简单包含匹配
+              if (andPart.length === 1) {
+                return timeAndPerformerText.toLowerCase().includes(andPart.toLowerCase());
+              }
+              return textIncludesKeyword(timeAndPerformerText, andPart);
+            });
+          });
+        });
+        if (isBlacklisted) shouldHide = true;
+      }
+
+      // 检查是否隐藏已售完
+      if (settings.hideSoldOut && isSoldOut) {
+        shouldHide = true;
+      }
+
+      // 设置显示状态，保持原有的HTML结构
+      if (shouldHide) {
+        section.style.setProperty('display', 'none', 'important');
+      } else {
+        section.style.removeProperty('display');
+      }
+    });
+  } else {
+    // 原有的票券列表页面处理逻辑
+    const ticketForms = document.querySelectorAll('form');
+    if (!ticketForms.length) return;
+
+    ticketForms.forEach(form => {
+      const ticketNameElement = form.querySelector('.font-medium span');
+      const ticketName = ticketNameElement ? ticketNameElement.textContent.trim() : '';
+      
+      // 更精确地获取价格元素
+      const priceElement = form.querySelector('.opacity-80 span.mx-2');
+      let priceText = '';
+      if (priceElement) {
+        // 移除 TWD$ 前缀，移除逗号，移除所有空格
+        priceText = priceElement.textContent
+          .replace('TWD$', '')
+          .replace(/,/g, '')
+          .replace(/\s+/g, '')
+          .trim();
+      }
+      
+      const fullText = `${ticketName} ${priceText}`;
+      
+      // 检查售完状态 - 先找到最后一个按钮
+      const buttons = form.querySelectorAll('button');
+      const lastButton = buttons[buttons.length - 1];
+      const isSoldOut = lastButton && (
+        lastButton.textContent.includes('已售完') || 
+        lastButton.textContent.includes('售完') ||
+        lastButton.textContent.includes('全數售罄') ||
+        lastButton.textContent.includes('尚未開始')
+      );
+
+      let shouldHide = false;
+
+      // 檢查關鍵字 - 支持 AND/OR 逻辑
+      if (settings.keywords && settings.keywords.length > 0) {
+        const matchesKeyword = settings.keywords.some(keyword => {
+          // 处理数字关键字 - 移除逗号后比较
+          const cleanKeyword = keyword.replace(/,/g, '');
+          if (!isNaN(cleanKeyword)) {
+            const isMatch = priceText === cleanKeyword;
+            console.log('数字比较:', {
+              keyword: keyword,
+              cleanKeyword: cleanKeyword,
+              priceText: priceText,
+              isMatch: isMatch
+            });
+            return isMatch;
+          }
+          
+          // 非数字关键字才进行 OR/AND 处理
+          const orParts = keyword.split('+').map(part => part.trim());
+          return orParts.some(orPart => {
+            const andParts = orPart.split(',').map(part => part.trim());
+            return andParts.every(andPart => {
+              // 如果是数字，移除逗号后比较
+              const cleanAndPart = andPart.replace(/,/g, '');
+              if (!isNaN(cleanAndPart)) {
+                return priceText === cleanAndPart;
+              }
+              return textIncludesKeyword(fullText, andPart);
+            });
+          });
+        });
+        
+        if (!matchesKeyword) shouldHide = true;
+      }
+
+      // 檢查黑名單 - 支持 AND/OR 逻辑
+      if (settings.blacklist && settings.blacklist.length > 0) {
+        const isBlacklisted = settings.blacklist.some(blacklistItem => {
+          // 处理数字黑名单 - 移除逗号后比较
+          const cleanBlacklistItem = blacklistItem.replace(/,/g, '');
+          if (!isNaN(cleanBlacklistItem)) {
+            return priceText === cleanBlacklistItem;
+          }
+          
+          const orParts = blacklistItem.split('+').map(part => part.trim());
+          return orParts.some(orPart => {
+            const andParts = orPart.split(',').map(part => part.trim());
+            return andParts.every(andPart => {
+              // 如果是数字，移除逗号后比较
+              const cleanAndPart = andPart.replace(/,/g, '');
+              if (!isNaN(cleanAndPart)) {
+                return priceText === cleanAndPart;
+              }
+              return textIncludesKeyword(fullText, andPart);
+            });
+          });
+        });
+        if (isBlacklisted) shouldHide = true;
+      }
+
+      // 檢查是否要隱藏已售完
+      if (settings.hideSoldOut && isSoldOut) {
+        shouldHide = true;
+      }
+
+      // 設置顯示狀態
+      const parentElement = form.closest('.border');
+      if (parentElement) {
+        if (shouldHide) {
+          parentElement.style.display = 'none';
+        } else {
+          parentElement.style.display = '';
+        }
+      }
+    });
+  }
+}
+
+// 修改寬宏售票的筛选函数
+async function filterKhamTickets() {
+  // 移除调试信息
+  // console.log('当前筛选设置:', settings);
+
+  // 获取所有票券行
+  const ticketRows = document.querySelectorAll('tr.status_tr');
+  if (!ticketRows.length) return;
+
+  try {
+    // 遍历每个票券行
+    ticketRows.forEach(row => {
+      const areaText = row.querySelector('td[data-title="票區："]')?.textContent?.trim() || '';
+      const priceElement = row.querySelector('td[data-title="票價："]');
+      const statusText = row.querySelector('td[data-title="空位："]')?.textContent?.trim() || '';
+      
+      // 处理价格文本 - 移除逗号和空格
+      let priceText = '';
+      if (priceElement) {
+        priceText = priceElement.textContent
+          .replace(/,/g, '')
+          .replace(/\s+/g, '')
+          .trim();
+      }
+      
+      const fullText = `${areaText} ${priceText}`;
+      const isSoldOut = statusText === '已售完';
+
+      let shouldHide = false;
+
+      // 检查关键字 - 支持 AND/OR 逻辑
+      if (settings.keywords && settings.keywords.length > 0) {
+        const matchesKeyword = settings.keywords.some(keyword => {
+          // 处理数字关键字 - 移除逗号后比较
+          const cleanKeyword = keyword.replace(/,/g, '');
+          if (!isNaN(cleanKeyword)) {
+            return priceText === cleanKeyword;
+          }
+          
+          // 非数字关键字才进行 OR/AND 处理
+          const orParts = keyword.split('+').map(part => part.trim());
+          return orParts.some(orPart => {
+            const andParts = orPart.split(',').map(part => part.trim());
+            return andParts.every(andPart => {
+              // 如果是数字，移除逗号后比较
+              const cleanAndPart = andPart.replace(/,/g, '');
+              if (!isNaN(cleanAndPart)) {
+                return priceText === cleanAndPart;
+              }
+              return textIncludesKeyword(fullText, andPart);
+            });
+          });
+        });
+        
+        if (!matchesKeyword) shouldHide = true;
+      }
+
+      // 检查黑名单 - 支持 AND/OR 逻辑
+      if (settings.blacklist && settings.blacklist.length > 0) {
+        const isBlacklisted = settings.blacklist.some(blacklistItem => {
+          // 处理数字黑名单 - 移除逗号后比较
+          const cleanBlacklistItem = blacklistItem.replace(/,/g, '');
+          if (!isNaN(cleanBlacklistItem)) {
+            return priceText === cleanBlacklistItem;
+          }
+          
+          const orParts = blacklistItem.split('+').map(part => part.trim());
+          return orParts.some(orPart => {
+            const andParts = orPart.split(',').map(part => part.trim());
+            return andParts.every(andPart => {
+              // 如果是数字，移除逗号后比较
+              const cleanAndPart = andPart.replace(/,/g, '');
+              if (!isNaN(cleanAndPart)) {
+                return priceText === cleanAndPart;
+              }
+              return textIncludesKeyword(fullText, andPart);
+            });
+          });
+        });
+        if (isBlacklisted) shouldHide = true;
+      }
+
+      // 检查是否隐藏已售完
+      if (settings.hideSoldOut && isSoldOut) {
+        shouldHide = true;
+      }
+
+      // 设置显示状态
+      row.style.display = shouldHide ? 'none' : '';
+    });
+  } finally {
+    // 确保处理完成后重置 isProcessing 状态
+    settings.isProcessing = false;
+  }
+}
+
+// 在 filterKhamTickets 函数后添加
+// 监听寬宏售票网站的票券列表变化
+function initKhamObserver() {
+  const site = getCurrentSite();
+  if (site !== 'kham') return;
+
+  // 创建一个观察器实例
+  const observer = new MutationObserver((mutations) => {
+    // 检查变化是否涉及票券列表
+    const hasTicketChanges = mutations.some(mutation => {
+      return mutation.target.classList?.contains('status_tr') ||
+             mutation.target.querySelector?.('tr.status_tr');
+    });
+
+    if (hasTicketChanges) {
+      filterKhamTickets();
+    }
+  });
+
+  // 配置观察选项
+  const config = {
+    childList: true,    // 观察子节点的添加或删除
+    subtree: true,      // 观察所有后代节点
+    attributes: true,   // 观察属性变化
+    attributeFilter: ['style', 'class'] // 只观察 style 和 class 属性的变化
+  };
+
+  // 开始观察票券列表容器
+  const ticketContainer = document.querySelector('tbody');
+  if (ticketContainer) {
+    observer.observe(ticketContainer, config);
+  }
+}
+
+// 在页面加载完成后初始化观察器
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initKhamObserver);
+} else {
+  initKhamObserver();
+}

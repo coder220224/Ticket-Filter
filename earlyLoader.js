@@ -2,13 +2,19 @@
 (function() {
   // 判断当前网站类型
   const isIbon = window.location.hostname.includes('ibon.com.tw');
-  const isTixcraft = window.location.href.includes('tixcraft.com/ticket/area/');
+  const isTixcraft = window.location.href.includes('tixcraft.com/ticket/area/') || window.location.hostname.includes('tixcraftweb-pcox.onrender.com');
   const isKktix = window.location.hostname.includes('kktix.com');
   const isCityline = window.location.hostname.includes('cityline.com');
   const isEra = window.location.hostname.includes('ticket.com.tw');
+  const isFami = window.location.hostname.includes('fami.life');
+  const isWdragons = window.location.hostname.includes('tix.wdragons.com');
+  const isCtbcsports = window.location.hostname.includes('tix.ctbcsports.com');
+  const isFubonbraves = window.location.hostname.includes('tix.fubonbraves.com');
+  const isKham = window.location.hostname.includes('kham.com.tw');
+  const isJKFace = window.location.hostname.includes('jkface.net');
   
   // 仅在适用的网站上应用筛选
-  if (!isIbon && !isTixcraft && !isKktix && !isCityline && !isEra) return;
+  if (!isIbon && !isTixcraft && !isKktix && !isCityline && !isEra && !isFami && !isWdragons && !isCtbcsports && !isFubonbraves && !isKham && !isJKFace) return;
 
   // 特別處理 ibon 網站
   if (isIbon) {
@@ -204,6 +210,153 @@
       }
     `;
     document.documentElement.appendChild(styleElement);
+  } else if (isFami || isWdragons || isCtbcsports || isFubonbraves) {
+    // Fami Life 网站及相关网站 - 使用visibility和opacity结合的方式
+    const styleElement = document.createElement('style');
+    styleElement.id = 'ticket-filter-early-style-fami';
+    styleElement.textContent = `
+      /* Fami Life 网站及相关网站 - 初始隐藏所有票券 */
+      .f1 .saleTr {
+        visibility: hidden !important;
+        opacity: 0 !important;
+        transition: visibility 0s, opacity 0.2s ease-out !important;
+      }
+      
+      /* 当筛选完成后显示 */
+      .f1 .saleTr.filter-ready {
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      /* 确保被筛选隐藏的票券保持隐藏 */
+      .f1 .saleTr.filter-ready[style*="display: none"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+    `;
+    document.documentElement.appendChild(styleElement);
+  } else if (isKham) {
+    // 寬宏售票网站 - 使用visibility和opacity结合的方式
+    const styleElement = document.createElement('style');
+    styleElement.id = 'ticket-filter-early-style-kham';
+    styleElement.textContent = `
+      /* 寬宏售票网站 - 初始隐藏所有票券 */
+      tr.status_tr {
+        visibility: hidden !important;
+        opacity: 0 !important;
+        transition: visibility 0s, opacity 0.2s ease-out !important;
+      }
+      
+      /* 当筛选完成后显示 */
+      tr.status_tr.filter-ready {
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      /* 确保被筛选隐藏的票券保持隐藏 */
+      tr.status_tr.filter-ready[style*="display: none"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+    `;
+    document.documentElement.appendChild(styleElement);
+  } else if (isJKFace) {
+    // JKFace网站 - 使用visibility和opacity结合的方式
+    const styleElement = document.createElement('style');
+    styleElement.id = 'ticket-filter-early-style-jkface';
+    styleElement.textContent = `
+      /* JKFace网站 - 初始隐藏所有票券 */
+      body:not(.extension-disabled) section.mx-3 {
+        visibility: hidden !important;
+        opacity: 0 !important;
+        transition: visibility 0s, opacity 0.2s ease-out !important;
+      }
+      
+      /* 当筛选完成后显示 */
+      body:not(.extension-disabled) section.mx-3.filter-ready {
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      /* 确保被筛选隐藏的票券保持隐藏 */
+      body:not(.extension-disabled) section.mx-3.filter-ready[style*="display: none"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+
+      /* 停用時顯示所有票券 */
+      body.extension-disabled section.mx-3 {
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+    `;
+    document.documentElement.appendChild(styleElement);
+
+    // 監聽擴充功能啟用狀態變化
+    chrome.storage.onChanged.addListener(function(changes) {
+      if (changes.extensionEnabled) {
+        if (changes.extensionEnabled.newValue === false) {
+          document.body.classList.add('extension-disabled');
+          // 移除所有篩選相關的 class
+          document.querySelectorAll('section.mx-3').forEach(section => {
+            section.classList.remove('filter-ready');
+            section.style.removeProperty('display');
+          });
+        } else {
+          document.body.classList.remove('extension-disabled');
+        }
+      }
+    });
+
+    // 初始化時檢查擴充功能狀態
+    chrome.storage.local.get(['extensionEnabled'], function(result) {
+      if (result.extensionEnabled === false) {
+        document.body.classList.add('extension-disabled');
+      }
+    });
+
+    // 监听日期按钮点击和动态内容更新
+    const jkfaceObserver = new MutationObserver((mutations) => {
+      // 檢查擴充功能是否已停用
+      if (document.body.classList.contains('extension-disabled')) {
+        return;
+      }
+
+      for (const mutation of mutations) {
+        if (mutation.addedNodes && mutation.addedNodes.length) {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType === 1 && // 元素节点
+                node.matches && // 确保有matches方法
+                node.matches('section.mx-3')) {
+              // 确保新添加的section保持隐藏状态
+              node.style.visibility = 'hidden';
+              node.style.opacity = '0';
+              node.classList.remove('filter-ready');
+            }
+          });
+        }
+      }
+    });
+
+    // 观察整个文档的变化
+    jkfaceObserver.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+
+    // 设置一个较短的超时，确保不会永久隱藏
+    setTimeout(() => {
+      if (!window.ticketFilterComplete && !document.body.classList.contains('extension-disabled')) {
+        document.querySelectorAll('section.mx-3').forEach(el => {
+          if (el.style.display !== 'none') {
+            el.classList.add('filter-ready');
+          }
+        });
+      }
+    }, 1500);
   }
   
   // 记录是否已收到筛选完成消息
@@ -333,6 +486,33 @@
       document.querySelectorAll('.area-list li').forEach(el => {
         el.classList.add('filter-ready');
       });
+    } else if (isFami || isWdragons || isCtbcsports || isFubonbraves) {
+      // 对于 Fami Life 及相关网站，使用 class 切换来显示元素
+      document.querySelectorAll('.saleTr').forEach(el => {
+        if (el.style.display !== 'none') {
+          el.classList.add('filter-ready');
+        }
+      });
+    } else if (isKham) {
+      // 对于寬宏售票，使用 class 切换来显示元素
+      document.querySelectorAll('.status_tr').forEach(el => {
+        if (el.style.display !== 'none') {
+          el.classList.add('filter-ready');
+        }
+      });
+    } else if (isJKFace) {
+      // 对于 JKFace，使用 class 切换来显示元素
+      document.querySelectorAll('section.mx-3').forEach(el => {
+        if (el.style.display !== 'none') {
+          el.classList.add('filter-ready');
+        }
+      });
+      
+      // 如果有观察者，在筛选完成后断开连接
+      const jkfaceObserver = document.querySelector('#ticket-filter-early-style-jkface')?.jkfaceObserver;
+      if (jkfaceObserver) {
+        jkfaceObserver.disconnect();
+      }
     }
     
     // 处理ibon的Shadow DOM

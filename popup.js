@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     if (tabs[0]) {
       const url = tabs[0].url;
-      if (url.includes('tixcraft.com')) {
+      if (url.includes('tixcraft.com') || url.includes('tixcraftweb-pcox.onrender.com')) {
         currentSite = 'tixcraft';
         loadTixcraftSettings();
         document.body.setAttribute('data-site', 'tixcraft');
@@ -136,6 +136,81 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSite = 'ticketplus';
         loadTicketPlusSettings();
         document.body.setAttribute('data-site', 'ticketplus');
+      } else if (url.includes('fami.life')) {
+        console.log('检测到 Fami Life 网站，开始加载设置');
+        currentSite = 'fami';
+        document.body.setAttribute('data-site', 'fami');
+      } else if (url.includes('tix.wdragons.com') || url.includes('tix.ctbcsports.com') || url.includes('tix.fubonbraves.com')) {
+        console.log('检测到 Fami Life 相关网站，开始加载设置');
+        currentSite = 'fami';
+        document.body.setAttribute('data-site', 'fami');
+        // 确保在设置 data-site 后再加载设置
+        chrome.storage.local.get(['famiKeywords', 'famiBlacklist', 'famiHideSoldOut'], (result) => {
+          console.log('加载到的设置：', result);
+          if (result.famiKeywords) {
+            keywords = new Set(result.famiKeywords);
+          } else {
+            keywords = new Set();
+          }
+          if (result.famiBlacklist) {
+            blacklist = new Set(result.famiBlacklist);
+          } else {
+            blacklist = new Set();
+          }
+          showSoldOut.checked = result.famiHideSoldOut || false;
+          
+          // 确保 UI 更新
+          renderKeywords();
+          renderBlacklist();
+          updateFilterLabel();
+        });
+      } else if (url.includes('jkface.net')) {
+        console.log('检测到 JKFace 网站，开始加载设置');
+        currentSite = 'jkface';
+        document.body.setAttribute('data-site', 'jkface');
+        // 加载 JKFace 设置
+        chrome.storage.local.get(['jkfaceKeywords', 'jkfaceBlacklist', 'jkfaceHideSoldOut'], (result) => {
+          console.log('加载到的设置：', result);
+          if (result.jkfaceKeywords) {
+            keywords = new Set(result.jkfaceKeywords);
+          } else {
+            keywords = new Set();
+          }
+          if (result.jkfaceBlacklist) {
+            blacklist = new Set(result.jkfaceBlacklist);
+          } else {
+            blacklist = new Set();
+          }
+          showSoldOut.checked = result.jkfaceHideSoldOut || false;
+          
+          // 确保 UI 更新
+          renderKeywords();
+          renderBlacklist();
+          updateFilterLabel();
+        });
+      } else if (url.includes('kham.com.tw')) {
+        currentSite = 'kham';
+        document.body.setAttribute('data-site', 'kham');
+        // 加载 Kham 设置
+        chrome.storage.local.get(['khamKeywords', 'khamBlacklist', 'khamHideSoldOut'], (result) => {
+          console.log('加载到的设置：', result);
+          if (result.khamKeywords) {
+            keywords = new Set(result.khamKeywords);
+          } else {
+            keywords = new Set();
+          }
+          if (result.khamBlacklist) {
+            blacklist = new Set(result.khamBlacklist);
+          } else {
+            blacklist = new Set();
+          }
+          showSoldOut.checked = result.khamHideSoldOut || false;
+          
+          // 确保 UI 更新
+          renderKeywords();
+          renderBlacklist();
+          updateFilterLabel();
+        });
       }
     }
   });
@@ -244,6 +319,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 載入 Fami Life 設定
+  function loadFamiSettings() {
+    chrome.storage.local.get(['famiKeywords', 'famiBlacklist', 'famiHideSoldOut'], (result) => {
+      if (result.famiKeywords) {
+        keywords = new Set(result.famiKeywords);
+        renderKeywords();
+        updateFilterLabel();
+      }
+      if (result.famiBlacklist) {
+        blacklist = new Set(result.famiBlacklist);
+        renderBlacklist();
+      }
+      if (result.famiHideSoldOut !== undefined) {
+        showSoldOut.checked = result.famiHideSoldOut;
+      }
+    });
+  }
+
   // Update filter label
   function updateFilterLabel() {
     if (keywords.size > 0) {
@@ -261,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (keywords.size === 0) {
       keywordsContainer.innerHTML = '<span class="no-keywords">尚未設定篩選條件</span>';
       
-      // 添加這行來隱藏標籤
+      // 只在用户主动清除时才隐藏标签
       if (currentFilter) {
         currentFilter.style.display = 'none';
       }
@@ -288,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         keywords.delete(keyword);
         renderKeywords();
         updateFilterLabel();
+        // 只在用户主动删除时应用过滤
         applyFilters();
       });
     });
@@ -336,6 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const keyword = e.target.dataset.keyword;
         blacklist.delete(keyword);
         renderBlacklist();
+        // 只在用户主动删除时应用过滤
         applyFilters();
       });
     });
@@ -610,6 +705,63 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           });
         });
+      } else if (currentSite === 'fami' || currentSite === 'wdragons' || currentSite === 'ctbcsports' || currentSite === 'fubonbraves') {
+        chrome.storage.local.set({
+          famiKeywords: [],
+          famiBlacklist: [],
+          famiHideSoldOut: false
+        }, () => {
+          chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs[0]) {
+              chrome.tabs.sendMessage(tabs[0].id, {
+                type: 'UPDATE_FAMI_SETTINGS',
+                settings: {
+                  keywords: [],
+                  blacklist: [],
+                  hideSoldOut: false
+                }
+              });
+            }
+          });
+        });
+      } else if (currentSite === 'jkface') {
+        chrome.storage.local.set({
+          jkfaceKeywords: [],
+          jkfaceBlacklist: [],
+          jkfaceHideSoldOut: false
+        }, () => {
+          chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs[0]) {
+              chrome.tabs.sendMessage(tabs[0].id, {
+                type: 'UPDATE_JKFACE_SETTINGS',
+                settings: {
+                  keywords: [],
+                  blacklist: [],
+                  hideSoldOut: false
+                }
+              });
+            }
+          });
+        });
+      } else if (currentSite === 'kham') {
+        chrome.storage.local.set({
+          khamKeywords: [],
+          khamBlacklist: [],
+          khamHideSoldOut: false
+        }, () => {
+          chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs[0]) {
+              chrome.tabs.sendMessage(tabs[0].id, {
+                type: 'UPDATE_KHAM_SETTINGS',
+                settings: {
+                  keywords: [],
+                  blacklist: [],
+                  hideSoldOut: false
+                }
+              });
+            }
+          });
+        });
       }
     });
   }
@@ -752,6 +904,69 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       });
+    } else if (site === 'fami' || site === 'wdragons' || site === 'ctbcsports' || site === 'fubonbraves') {
+      const settings = {
+        keywords: keywordArray,
+        blacklist: blacklistArray,
+        hideSoldOut: showSoldOut.checked
+      };
+      
+      chrome.storage.local.set({
+        famiKeywords: keywordArray,
+        famiBlacklist: blacklistArray,
+        famiHideSoldOut: showSoldOut.checked
+      }, () => {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+          if (tabs[0]) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+              type: 'UPDATE_FAMI_SETTINGS',
+              settings: settings
+            });
+          }
+        });
+      });
+    } else if (site === 'jkface') {
+      const settings = {
+        keywords: keywordArray,
+        blacklist: blacklistArray,
+        hideSoldOut: showSoldOut.checked
+      };
+      
+      chrome.storage.local.set({
+        jkfaceKeywords: keywordArray,
+        jkfaceBlacklist: blacklistArray,
+        jkfaceHideSoldOut: showSoldOut.checked
+      }, () => {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+          if (tabs[0]) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+              type: 'UPDATE_JKFACE_SETTINGS',
+              settings: settings
+            });
+          }
+        });
+      });
+    } else if (site === 'kham') {
+      const settings = {
+        keywords: keywordArray,
+        blacklist: blacklistArray,
+        hideSoldOut: showSoldOut.checked
+      };
+      
+      chrome.storage.local.set({
+        khamKeywords: keywordArray,
+        khamBlacklist: blacklistArray,
+        khamHideSoldOut: showSoldOut.checked
+      }, () => {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+          if (tabs[0]) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+              type: 'UPDATE_KHAM_SETTINGS',
+              settings: settings
+            });
+          }
+        });
+      });
     }
   }
 
@@ -822,5 +1037,106 @@ document.addEventListener('DOMContentLoaded', () => {
         showFilterStatus();
       }
     }
+  });
+
+  function isIbonTicketPage(url) {
+    return url.includes('ibon.com.tw/application/UTK0201_000.aspx') || 
+           url.match(/ibon\.com\.tw\/Event\/[A-Z0-9]+\/[A-Z0-9]+/);  // 添加新格式匹配
+  }
+
+  // 添加快捷键设置按钮的点击事件
+  document.getElementById('openShortcutSettings').addEventListener('click', function() {
+    // 使用chrome.tabs.create打开快捷键设置页面
+    chrome.tabs.create({
+      url: 'chrome://extensions/shortcuts'
+    });
+  });
+
+  // 获取当前快捷键设置
+  function updateCurrentShortcut() {
+    chrome.commands.getAll(commands => {
+      const toggleCommand = commands.find(command => command.name === 'toggle-extension');
+      const shortcutSpan = document.getElementById('currentShortcut');
+      if (toggleCommand && shortcutSpan) {
+        shortcutSpan.textContent = toggleCommand.shortcut || '未設定';
+      }
+    });
+  }
+
+  // 初始化时获取当前快捷键
+  updateCurrentShortcut();
+  
+  // 当popup打开时更新快捷键显示
+  chrome.commands.getAll(commands => {
+    const toggleCommand = commands.find(command => command.name === 'toggle-extension');
+    const shortcutSpan = document.getElementById('currentShortcut');
+    if (toggleCommand && shortcutSpan) {
+      shortcutSpan.textContent = toggleCommand.shortcut || '未設定';
+    }
+  });
+
+  // 处理快捷键启用/禁用
+  const enableShortcut = document.getElementById('enableShortcut');
+  const shortcutInfoContainer = document.getElementById('shortcutInfoContainer');
+  const openShortcutSettings = document.getElementById('openShortcutSettings');
+
+  // 加载快捷键启用状态
+  chrome.storage.local.get(['shortcutEnabled'], function(result) {
+    const enabled = result.shortcutEnabled !== false; // 默认启用
+    enableShortcut.checked = enabled;
+    updateShortcutUIState(enabled);
+  });
+
+  // 更新快捷键UI状态
+  function updateShortcutUIState(enabled) {
+    if (shortcutInfoContainer) {
+      shortcutInfoContainer.style.opacity = enabled ? '1' : '0.5';
+      shortcutInfoContainer.style.pointerEvents = enabled ? 'auto' : 'none';
+    }
+    if (openShortcutSettings) {
+      openShortcutSettings.style.opacity = enabled ? '1' : '0.5';
+      openShortcutSettings.style.pointerEvents = enabled ? 'auto' : 'none';
+    }
+  }
+
+  // 监听快捷键启用状态变化
+  enableShortcut.addEventListener('change', function(e) {
+    const enabled = e.target.checked;
+    chrome.storage.local.set({ shortcutEnabled: enabled });
+    updateShortcutUIState(enabled);
+
+    // 更新快捷键命令状态
+    chrome.commands.getAll(commands => {
+      const toggleCommand = commands.find(command => command.name === 'toggle-extension');
+      if (toggleCommand) {
+        if (!enabled) {
+          // 禁用快捷键时，保存当前的快捷键设置
+          chrome.storage.local.set({ 
+            savedShortcut: toggleCommand.shortcut 
+          }, () => {
+            // 然后清除快捷键
+            chrome.commands.update({
+              name: 'toggle-extension',
+              shortcut: ''
+            });
+            document.getElementById('currentShortcut').textContent = '已停用';
+          });
+        } else {
+          // 启用快捷键时，恢复之前保存的快捷键设置
+          chrome.storage.local.get(['savedShortcut'], function(result) {
+            if (result.savedShortcut) {
+              chrome.commands.update({
+                name: 'toggle-extension',
+                shortcut: result.savedShortcut
+              });
+              document.getElementById('currentShortcut').textContent = result.savedShortcut;
+            } else {
+              // 如果没有保存的快捷键，使用默认值
+              document.getElementById('currentShortcut').textContent = 'Ctrl+Shift+E';
+            }
+          });
+        }
+      }
+    });
   });
 }); 

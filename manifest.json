@@ -1,14 +1,12 @@
 {
   "manifest_version": 3,
   "name": "搶票柴柴-售票網站篩選器",
-  "version": "1.3.1",
+  "version": "1.5.0",
   "description": "在售票網站上快速篩選您想要的區域票券",
   "permissions": [
     "storage",
     "activeTab",
-    "scripting",
-    "webRequest",
-    "webRequestBlocking"
+    "commands"
   ],
   "host_permissions": [
     "*://*.tixcraft.com/*",
@@ -21,22 +19,45 @@
     "*://*.cityline.com/*",
     "*://www.cityline.com/*",
     "*://*.ticket.com.tw/*",
-    "*://*.ticketplus.com.tw/*"
+    "*://*.ticketplus.com.tw/*",
+    "*://*.fami.life/*",
+    "*://*.tix.wdragons.com/*",
+    "*://*.tix.ctbcsports.com/*",
+    "*://*.tix.fubonbraves.com/*",
+    "*://*.jkface.net/*",
+    "*://*.kham.com.tw/*",
+    "*://*.tixcraftweb-pcox.onrender.com/*"
   ],
+  "commands": {
+    "toggle-extension": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+E",
+        "mac": "Command+Shift+E"
+      },
+      "description": "啟用/停用篩選器"
+    }
+  },
   "content_scripts": [
     {
-      "matches": [
-        "*://*.tixcraft.com/*",
-        "*://*.kktix.com/*",
-        "*://*.kktix.cc/*",
-        "*://*.ibon.com.tw/*",
-        "*://ticket.ibon.com.tw/*",
-        "*://orders.ibon.com.tw/*",
-        "*://*.cityline.com/*",
-        "*://www.cityline.com/*",
-        "*://*.ticket.com.tw/*",
-        "*://*.ticketplus.com.tw/*"
-      ],
+                           "matches": [
+          "*://*.tixcraft.com/*",
+          "*://*.kktix.com/*",
+          "*://*.kktix.cc/*",
+          "*://*.ibon.com.tw/*",
+          "*://ticket.ibon.com.tw/*",
+          "*://orders.ibon.com.tw/*",
+          "*://*.cityline.com/*",
+          "*://www.cityline.com/*",
+          "*://*.ticket.com.tw/*",
+          "*://*.ticketplus.com.tw/*",
+          "*://*.fami.life/*",
+          "*://*.tix.wdragons.com/*",
+          "*://*.tix.ctbcsports.com/*",
+          "*://*.tix.fubonbraves.com/*",
+          "*://*.jkface.net/*",
+          "*://*.kham.com.tw/*",
+          "*://*.tixcraftweb-pcox.onrender.com/*"
+        ],
       "js": ["content.js"]
     },
     {
@@ -52,13 +73,31 @@
     },
     {
       "matches": [
+        "*://*.ibon.com.tw/*",
+        "*://ticket.ibon.com.tw/Event/*/*",
+        "*://orders.ibon.com.tw/*"
+      ],
+      "js": ["shadowInject.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    },
+    {
+      "matches": [
         "*://*.tixcraft.com/ticket/area/*",
         "*://*.kktix.com/*",
         "*://*.kktix.cc/*",
         "*://*.ibon.com.tw/*",
         "*://*.cityline.com/*",
         "*://*.ticket.com.tw/*",
-        "*://*.ticketplus.com.tw/*"
+        "*://*.ticketplus.com.tw/*",
+        "*://*.fami.life/*",
+        "*://*.tix.wdragons.com/*",
+        "*://*.tix.ctbcsports.com/*",
+        "*://*.tix.fubonbraves.com/*",
+        "*://*.jkface.net/*",
+        "*://*.kham.com.tw/*",
+        "*://*.tixcraftweb-pcox.onrender.com/*"
       ],
       "js": ["earlyLoader.js"],
       "run_at": "document_start",
@@ -85,7 +124,14 @@
       "*://*.ibon.com.tw/*",
       "*://*.cityline.com/*",
       "*://*.ticket.com.tw/*",
-      "*://*.ticketplus.com.tw/*"
+      "*://*.ticketplus.com.tw/*",
+      "*://*.fami.life/*",
+      "*://*.tix.wdragons.com/*",
+      "*://*.tix.ctbcsports.com/*",
+      "*://*.tix.fubonbraves.com/*",
+      "*://*.jkface.net/*",
+      "*://*.kham.com.tw/*",
+      "*://*.tixcraftweb-pcox.onrender.com/*"
     ]
   }],
   "action": {
