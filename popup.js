@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showSoldOut,
       showAll,
       addKeyword,
+      addBlacklist,
       showServerTime,
       showFilterStatus,
       showHelpText,
