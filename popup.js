@@ -289,11 +289,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 載入年代售票設定
   function loadTicketSettings() {
-    chrome.storage.local.get(['ticketKeywords', 'ticketHideSoldOut'], (result) => {
+    chrome.storage.local.get(['ticketKeywords', 'ticketBlacklist', 'ticketHideSoldOut'], (result) => {
       if (result.ticketKeywords) {
         keywords = new Set(result.ticketKeywords);
         renderKeywords();
         updateFilterLabel();
+      }
+      if (result.ticketBlacklist) {
+        blacklist = new Set(result.ticketBlacklist);
+        renderBlacklist();
       }
       if (result.ticketHideSoldOut !== undefined) {
         showSoldOut.checked = result.ticketHideSoldOut;
@@ -672,6 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (currentSite === 'ticket') {
         chrome.storage.local.set({
           ticketKeywords: [],
+          ticketBlacklist: [],
           ticketHideSoldOut: false
         }, () => {
           chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
@@ -680,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: 'UPDATE_TICKET_SETTINGS',
                 settings: {
                   keywords: [],
+                  blacklist: [],
                   hideSoldOut: false
                 }
               });
@@ -865,12 +871,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (site === 'ticket') {
       const settings = {
         keywords: keywordArray,
+        blacklist: blacklistArray,
         hideSoldOut: showSoldOut.checked
       };
       
       // 儲存設定
       chrome.storage.local.set({
         ticketKeywords: keywordArray,
+        ticketBlacklist: blacklistArray,
         ticketHideSoldOut: showSoldOut.checked
       }, () => {
         // 發送設定到content.js

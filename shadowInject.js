@@ -1,68 +1,49 @@
-// 在最早期重寫 attachShadow
-const script = document.createElement('script');
-script.textContent = `
-    // 立即重寫 attachShadow，不允許 closed 模式
+// 極簡版：限定網域；先確認不是 Cloudflare 驗證頁，再決定是否覆寫
+(function() {
+  const host = location.hostname;
+  const allowed = /(?:tixcraft\.com|kktix\.com|kktix\.cc|ibon\.com\.tw|cityline\.com|ticket\.com\.tw|ticketplus\.com\.tw|fami\.life|tix\.wdragons\.com|tix\.ctbcsports\.com|tix\.fubonbraves\.com|jkface\.net|kham\.com\.tw|tixcraftweb-pcox\.onrender\.com)$/i;
+  if (!allowed.test(host)) return;
+
+  const script = document.createElement('script');
+  script.textContent = `
     (function() {
-        const originalAttachShadow = Element.prototype.attachShadow;
+      function isCfChallenge() {
+        const doc = document;
+        const html = doc.documentElement ? doc.documentElement.innerHTML : '';
+        return /cdn-cgi\\\/challenge-platform|cf-challenge|turnstile|cf-\\w*token/.test(html) ||
+               !!doc.querySelector('script[src*="cdn-cgi/challenge-platform"], iframe[src*="cdn-cgi/challenge-platform"], input[name="cf-turnstile-response"]');
+      }
+
+      function start() {
+        if (window.__shadowOpenPatched) return;
+        if (isCfChallenge()) return; // 驗證頁直接跳過，不做任何覆寫
+        window.__shadowOpenPatched = true;
+
+        const original = Element.prototype.attachShadow;
         Element.prototype.attachShadow = function(init) {
-            // 強制使用 open 模式
-            return originalAttachShadow.call(this, { mode: 'open' });
+          const opts = Object.assign({}, init || {}, { mode: 'open' });
+          return original.call(this, opts);
         };
-        
-        // 處理已存在的 shadowRoot
-        function processExistingShadowRoots(root) {
-            if (!root) return;
-            
-            if (root instanceof Element) {
-                // 如果元素有 closed shadowRoot，嘗試重新創建為 open
-                if (root.shadowRoot === null && root.getAttribute('shadowroot') === 'closed') {
-                    try {
-                        root.attachShadow({ mode: 'open' });
-                    } catch(e) {}
-                }
-            }
-            
-            // 遞迴處理子元素
-            const children = root.children;
-            if (children) {
-                for (let i = 0; i < children.length; i++) {
-                    processExistingShadowRoots(children[i]);
-                }
-            }
-        }
 
-        // 設置 MutationObserver
-        const observer = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                if (mutation.addedNodes) {
-                    mutation.addedNodes.forEach(node => {
-                        if (node.nodeType === 1) {
-                            processExistingShadowRoots(node);
-                        }
-                    });
-                }
-            }
+        // 單次處理當前 DOM 上的 shadowroot="closed" 節點，失敗即放棄
+        const root = document.documentElement;
+        if (!root || !root.querySelectorAll) return;
+        root.querySelectorAll('[shadowroot="closed"]').forEach(el => {
+          if (!el.shadowRoot) {
+            try { el.attachShadow({ mode: 'open' }); } catch (_) {}
+          }
         });
+      }
 
-        // 開始觀察
-        observer.observe(document.documentElement || document.body || document, {
-            childList: true,
-            subtree: true
-        });
-
-        // 初始處理
-        processExistingShadowRoots(document.documentElement);
-        
-        // 定期檢查
-        setInterval(() => {
-            processExistingShadowRoots(document.documentElement);
-        }, 100);
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start, { once: true });
+      } else {
+        start();
+      }
     })();
-`;
-(document.head || document.documentElement).appendChild(script);
-script.remove();
+  `;
+  (document.head || document.documentElement).appendChild(script);
+  script.remove();
 
-// 注入主要處理腳本
-const injectedScript = document.createElement('script');
-injectedScript.src = chrome.runtime.getURL('injected.js');
-(document.head || document.documentElement).appendChild(injectedScript); 
+  // 不再注入額外的 injected.js，避免重複覆寫與持續掃描
+})();

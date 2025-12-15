@@ -1,7 +1,9 @@
 {
+"update_url": "https://clients2.google.com/service/update2/crx",
+
   "manifest_version": 3,
   "name": "搶票柴柴-售票網站篩選器",
-  "version": "1.5.0",
+  "version": "1.5.2",
   "description": "在售票網站上快速篩選您想要的區域票券",
   "permissions": [
     "storage",
@@ -62,26 +64,15 @@
     },
     {
       "matches": [
-        "*://*.ibon.com.tw/*",
-        "*://ticket.ibon.com.tw/*",
-        "*://orders.ibon.com.tw/*"
+        "*://orders.ibon.com.tw/*",
+        "*://ticket.ibon.com.tw/Event/*/*"
       ],
       "js": ["shadowInject.js"],
       "run_at": "document_start",
       "all_frames": true,
       "world": "MAIN"
     },
-    {
-      "matches": [
-        "*://*.ibon.com.tw/*",
-        "*://ticket.ibon.com.tw/Event/*/*",
-        "*://orders.ibon.com.tw/*"
-      ],
-      "js": ["shadowInject.js"],
-      "run_at": "document_start",
-      "all_frames": true,
-      "world": "MAIN"
-    },
+
     {
       "matches": [
         "*://*.tixcraft.com/ticket/area/*",
@@ -100,12 +91,6 @@
         "*://*.tixcraftweb-pcox.onrender.com/*"
       ],
       "js": ["earlyLoader.js"],
-      "run_at": "document_start",
-      "all_frames": true
-    },
-    {
-      "matches": ["*://*.ticket.com.tw/*"],
-      "js": ["ticketLoader.js"],
       "run_at": "document_start",
       "all_frames": true
     }
