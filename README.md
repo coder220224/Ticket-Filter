@@ -40,7 +40,7 @@
 3. 新增擴充功能
 
 ### 📥 本地下載(版本1.5.2)
-1. [點我下載](https://github.com/coder220224/ticket-filter/releases/download/v1.5.0/ticket-filter-v1.5.2.zip)
+1. [點我下載](https://github.com/coder220224/ticket-filter/releases/download/v1.5.2/ticket-filter-v1.5.2.zip)
 2. 解壓縮檔案
 3. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
 4. 開啟右上角的「開發人員模式」
