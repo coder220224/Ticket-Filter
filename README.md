@@ -36,7 +36,7 @@
 ## 🧩 安裝方式
 ### <img src="https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg" width="25"> Chrome商店(版本1.5.4)
 1. 前往 [Chrome商店](https://chromewebstore.google.com/detail/pofndajlpfdonhkefkppngfghocppcck?utm_source=item-share-cb)
-2. 加到Chrome
+2. 點擊「加到Chrome」
 3. 新增擴充功能
 
 ### 📥 本地下載(版本1.5.4)
