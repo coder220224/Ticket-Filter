@@ -1045,12 +1045,6 @@ async function filterIbonTickets() {
   const isNewVersion = url.match(/Event\/[A-Z0-9]+\/[A-Z0-9]+/);
   const isOldVersion = url.includes('UTK0201_000.aspx');
 
-  // 调试信息
-  console.log('当前URL:', url);
-  console.log('是否新版:', isNewVersion);
-  console.log('是否旧版:', isOldVersion);
-  console.log('当前设置:', settings);
-
   if (isNewVersion) {
     // 新版 ibon 处理逻辑
     async function handleNewVersion() {
