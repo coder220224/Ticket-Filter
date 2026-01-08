@@ -34,20 +34,20 @@
 - 擴充功能開關：可快速開啟/關閉擴充功能
 
 ## 🧩 安裝方式
-### <img src="https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg" width="25"> Chrome商店(版本1.5.1)
+### <img src="https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg" width="25"> Chrome商店(版本1.5.4)
 1. 前往 [Chrome商店](https://chromewebstore.google.com/detail/pofndajlpfdonhkefkppngfghocppcck?utm_source=item-share-cb)
 2. 加到Chrome
 3. 新增擴充功能
 
-### 📥 本地下載(版本1.5.2)
-1. [點我下載](https://github.com/coder220224/ticket-filter/releases/download/v1.5.2/ticket-filter-v1.5.2.zip)
+### 📥 本地下載(版本1.5.4)
+1. [點我下載](https://github.com/coder220224/ticket-filter/releases/download/v1.5.4/ticket-filter-v1.5.4.zip)
 2. 解壓縮檔案
 3. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
 4. 開啟右上角的「開發人員模式」
 5. 點擊「載入未封裝項目」
 6. 選擇解壓縮後的資料夾
 
-### <img src="https://raw.githubusercontent.com/primer/octicons/main/icons/tag-16.svg" width="20" /> Github Releases(版本1.5.2)
+### <img src="https://raw.githubusercontent.com/primer/octicons/main/icons/tag-16.svg" width="20" /> Github Releases(版本1.5.4)
 1. 前往 [Releases](https://github.com/coder220224/ticket-filter/releases) 頁面
 2. 下載最新版本的 ZIP 檔案
 3. 解壓縮檔案
@@ -84,9 +84,9 @@
 - 支援價格格式轉換
   - 輸入「2800」可以找到「2,800」的票價
 
-## 🔥 版本更新 (v1.5.2)
+## 🔥 版本更新 (v1.5.4)
 ### 1. 新增平台支援
-   - 支援年代售票網站(ticket.com.tw)
+   - 優化ibon平台功能
 
 ## ⚠️ 注意事項
 
@@ -102,8 +102,8 @@
 
 ## 🏷️ 版本資訊
 
-- 目前版本：1.5.2
-- 最後更新：2025/12/15
+- 目前版本：1.5.4
+- 最後更新：2026/1/8
 
 ## 👨‍💻 開發者資訊
 
