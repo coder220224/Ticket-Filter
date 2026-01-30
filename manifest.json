@@ -3,7 +3,7 @@
 
   "manifest_version": 3,
   "name": "搶票柴柴-售票網站篩選器",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "在售票網站上快速篩選您想要的區域票券",
   "permissions": [
     "storage",

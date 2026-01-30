@@ -862,7 +862,7 @@ async function filterKKTIXTickets() {
   // 如果沒有任何篩選條件，只處理是否隱藏已售完
   if (settings.keywords.length === 0 && (!settings.blacklist || settings.blacklist.length === 0)) {
     ticketRows.forEach(row => {
-      const isSoldOut = row.textContent.includes('已售完');
+      const isSoldOut = row.textContent.includes('已售完') || row.textContent.includes('暫無票券');
       if (settings.hideSoldOut && isSoldOut) {
         row.style.display = 'none';
       } else {
@@ -885,20 +885,22 @@ async function filterKKTIXTickets() {
         .replace(/\s+/g, '') // 移除所有空格
         .trim();
       
+      // 使用完整的票券行文本内容，包含状态信息（如"已售完"、"暫無票券"等）
+      const fullText = row.textContent;
       const text = `${name} ${price}`;
-      const isSoldOut = row.textContent.includes('已售完');
+      const isSoldOut = row.textContent.includes('已售完') || row.textContent.includes('暫無票券');
       
-      // 檢查是否在黑名單中
+      // 檢查是否在黑名單中（使用完整文本内容，包含状态信息）
       const isBlacklisted = settings.blacklist && settings.blacklist.length > 0 && 
         settings.blacklist.some(blacklistItem => {
           const orParts = blacklistItem.split('+').map(part => part.trim());
           return orParts.some(orPart => {
             const andParts = orPart.split(',').map(part => part.trim());
-            return andParts.every(andPart => textIncludesKeyword(text, andPart));
+            return andParts.every(andPart => textIncludesKeyword(fullText, andPart));
           });
         });
       
-      // 檢查是否符合關鍵字
+      // 檢查是否符合關鍵字（使用完整文本内容，包含状态信息）
       const matchesKeyword = settings.keywords.length === 0 || 
         settings.keywords.some(keyword => {
           const orParts = keyword.split('+').map(part => part.trim());
@@ -907,9 +909,9 @@ async function filterKKTIXTickets() {
             return andParts.every(andPart => {
               // 如果是单字符，使用更宽松的匹配
               if (andPart.length === 1) {
-                return text.toLowerCase().includes(andPart.toLowerCase());
+                return fullText.toLowerCase().includes(andPart.toLowerCase());
               }
-              return textIncludesKeyword(text, andPart);
+              return textIncludesKeyword(fullText, andPart);
             });
           });
         });
