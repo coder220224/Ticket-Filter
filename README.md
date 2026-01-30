@@ -39,15 +39,15 @@
 2. 點擊「加到Chrome」
 3. 新增擴充功能
 
-### 📥 本地下載(版本1.5.4)
-1. [點我下載](https://github.com/coder220224/ticket-filter/releases/download/v1.5.4/ticket-filter-v1.5.4.zip)
+### 📥 本地下載(版本1.5.5)
+1. [點我下載](https://github.com/coder220224/ticket-filter/releases/download/v1.5.5/ticket-filter-v1.5.5.zip)
 2. 解壓縮檔案
 3. 開啟 Chrome 瀏覽器，前往 chrome://extensions/
 4. 開啟右上角的「開發人員模式」
 5. 點擊「載入未封裝項目」
 6. 選擇解壓縮後的資料夾
 
-### <img src="https://raw.githubusercontent.com/primer/octicons/main/icons/tag-16.svg" width="20" /> Github Releases(版本1.5.4)
+### <img src="https://raw.githubusercontent.com/primer/octicons/main/icons/tag-16.svg" width="20" /> Github Releases(版本1.5.5)
 1. 前往 [Releases](https://github.com/coder220224/ticket-filter/releases) 頁面
 2. 下載最新版本的 ZIP 檔案
 3. 解壓縮檔案
@@ -84,9 +84,10 @@
 - 支援價格格式轉換
   - 輸入「2800」可以找到「2,800」的票價
 
-## 🔥 版本更新 (v1.5.4)
+## 🔥 版本更新 (v1.5.5)
 ### 1. 修復問題
-   - 優化ibon平台功能
+   - 修復kktix平台無法隱藏「暫無票券」的問題
+   - 優化關鍵字篩選與黑名單過濾功能
 
 ## ⚠️ 注意事項
 
@@ -102,8 +103,8 @@
 
 ## 🏷️ 版本資訊
 
-- 目前版本：1.5.4
-- 最後更新：2026/1/8
+- 目前版本：1.5.5
+- 最後更新：2026/1/30
 
 ## 👨‍💻 開發者資訊
 
