@@ -34,7 +34,7 @@
 - 擴充功能開關：可快速開啟/關閉擴充功能
 
 ## 🧩 安裝方式
-### <img src="https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg" width="25"> Chrome商店(版本1.5.4)
+### <img src="https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg" width="25"> Chrome商店(版本1.5.5)
 1. 前往 [Chrome商店](https://chromewebstore.google.com/detail/pofndajlpfdonhkefkppngfghocppcck?utm_source=item-share-cb)
 2. 點擊「加到Chrome」
 3. 新增擴充功能
